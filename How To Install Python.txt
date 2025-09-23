@@ -1,0 +1,36 @@
+To get your computer ready to run Python:
+
+	Go To https://www.python.org/downloads/
+	There will be a button to download python underneath the text:
+	"Download the latest version for Windows"
+
+	When you click that button, an installer will download onto your computer.
+	IMPORTANT: When you run the installer, you will see a screen with an
+		options saying: "Install Now" and "Customize Installation"
+		Before you press the button that says install now,
+		Go To The Bottom And Check The Box That Says "Add Python to PATH"
+		Without clicking this option, your computer will not know that python
+		was installed and you won't be able to follow the next steps.
+
+	There is one additional library that we will need to install for python.
+	To do this, open windows command prompt.
+	If you do not know how to open windows command prompt, click the start menu
+	icon on the bottom of your computer screen.
+	Type "command prompt" into the search bar, and Windows command prompt should
+	pop up.
+
+	Type the two commands: "python --version" and "pip --version"
+
+	These will verify that you have python working on your computer and
+	that you have pip, a program to download python libraries, on your computer.
+	(pip downloads with python)
+
+	Next, type the command: "pip install pygame"
+
+	This will install the pygame library onto your computer and you should be
+	able to run the python code now.
+
+
+	If you were unsuccessful in getting pygame onto your computer,
+	go to this website, it may help:
+	https://www.geeksforgeeks.org/how-to-install-pygame-in-windows/
