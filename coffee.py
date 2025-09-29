@@ -51,6 +51,37 @@ class Accuracy_Data:
         self.prices = []     # price of each product
         self.probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product        
         self.progress = 0.0
+    def __str__(self):
+        string = ""
+        i = 0
+        while(i<len(self.products)):
+            string += f"ID:\t\t{self.products[i][0]}\nDesc:\t\t{self.products[i][1]}\n" # product ID and Description
+            j = 0
+            string += "Supplies:\t"                                                     # supplies
+            while(j<len(self.supplies[i])):
+                string += self.supplies[i][j]
+                if(j<len(self.supplies[i])-1):
+                    string += ", "
+                j += 1
+            string += "\n"
+            string += f"Price:\t\t{self.prices[i]}\n"                                   # price
+            j = 0
+            string += "ProbabilitySpace:\n"
+            while(j<len(self.probabilitySpaces[i])):                                    # probability space
+                string += "["
+                k = 0                
+                while(k<len(self.probabilitySpaces[i][j])):
+                    string += f"{self.probabilitySpaces[i][j][k]}"
+                    if(k==len(self.probabilitySpaces[i][j])-1):
+                        string += "]\n"
+                    else:
+                        string += ", "
+                    k += 1
+                if(j==len(self.probabilitySpaces[i])-1):
+                    string += "\n\n"
+                j += 1
+            i += 1
+        return string
     def readSalesData(self,progressBar):
         date = ""               # this is just to know when the day changes
         weekDay = 0             # note that the Data begins on January 1st, 2023, which is a Sunday
@@ -153,7 +184,7 @@ class Accuracy_Data:
             progressBar.update(self.progress)
         #always close files after using them
         salesFile.close()
-            
+
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
@@ -177,6 +208,8 @@ def main():                                             #every program should ha
         # ongoing game logic here  (repeats every 1/60 second)
         if(data.progress>=1.0):
             thread.join()
+            print(data)
+            return
         
       
         surface.fill(BLACK)                             #set background color
