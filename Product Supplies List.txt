@@ -1,0 +1,351 @@
+* this list is to assertain if any product supplies can be derived from the products themselves
+such supplies will be marked by *
+Products that only require a single supply item will have a period at the end of their supply list
+
+ID:             1
+Desc:           Coffee beans|Organic Beans|Brazilian - Organic
+Supplies:	*Brazilian Coffee Beans.
+
+ID:             2
+Desc:           Coffee beans|House blend Beans|Our Old Time Diner Blend
+Supplies:	*Old Time Diner Coffee Beans.
+
+ID:             3
+Desc:           Coffee beans|Espresso Beans|Espresso Roast
+Supplies:	*Espresso Roast Coffee Beans.
+
+ID:             4
+Desc:           Coffee beans|Espresso Beans|Primo Espresso Roast
+Supplies:	*Primo Espresso Roast Coffee Beans.
+
+ID:             5
+Desc:           Coffee beans|Gourmet Beans|Columbian Medium Roast
+Supplies:	*Columbian Medium Roast Coffee Beans.
+
+ID:             6
+Desc:           Coffee beans|Gourmet Beans|Ethiopia
+Supplies:	*Ethiopian Coffee Beans.
+
+ID:             7
+Desc:           Coffee beans|Premium Beans|Jamacian Coffee River
+Supplies:	*Jamacian Coffee Beans.
+
+ID:             8
+Desc:           Coffee beans|Premium Beans|Civet Cat
+Supplies:	*Civet Cat Coffee Beans.
+
+ID:             9
+Desc:           Coffee beans|Organic Beans|Organic Decaf Blend
+Supplies:	*Decaf Blend Coffee Beans.
+
+ID:             10
+Desc:           Coffee beans|Green beans|Guatemalan Sustainably Grown
+Supplies:	*Guatemalan Coffee Beans.
+
+ID:             11
+Desc:           Loose Tea|Herbal tea|Lemon Grass
+Supplies:	*Lemon Grass Tea Leaves.
+
+ID:             12
+Desc:           Loose Tea|Herbal tea|Peppermint
+Supplies:	*Peppermint Tea Leaves.
+
+ID:             13
+Desc:           Loose Tea|Black tea|English Breakfast
+Supplies:	*English Breakfast Tea Leaves.
+
+ID:             14
+Desc:           Loose Tea|Black tea|Earl Grey
+Supplies:	*Earl Grey Tea Leaves.
+
+ID:             15
+Desc:           Loose Tea|Green tea|Serenity Green Tea
+Supplies:	*Serenity Green Tea Leaves.
+
+ID:             16
+Desc:           Loose Tea|Chai tea|Traditional Blend Chai
+Supplies:	*Traditional Blend Chai Tea Leaves.
+
+ID:             17
+Desc:           Loose Tea|Chai tea|Morning Sunrise Chai
+Supplies:	* Morning Sunrise Chai Tea Leaves.
+
+ID:             18
+Desc:           Loose Tea|Chai tea|Spicy Eye Opener Chai
+Supplies:	*Spicy Eye Opener Chai Tea Leaves.
+
+ID:             19
+Desc:           Packaged Chocolate|Drinking Chocolate|Dark chocolate
+Supplies:	*Dark Chocolate Powder.
+
+ID:             20
+Desc:           Packaged Chocolate|Organic Chocolate|Sustainably Grown Organic
+Supplies:	*Organic Chocolate Powder.
+
+ID:             21
+Desc:           Packaged Chocolate|Drinking Chocolate|Chili Mayan
+Supplies:	Chili Mayan Chocolate Powder.
+
+ID:             22
+Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Sm
+Supplies:	*(0.75?)Old Time Diner Coffee Beans.
+
+ID:             23
+Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Rg
+Supplies:	*(1?)Old Time Diner Coffee Beans.
+
+ID:             24
+Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Lg
+Supplies:	*(1.25?)Old Time Diner Coffee Beans.
+
+ID:             25
+Desc:           Coffee|Organic brewed coffee|Brazilian Sm
+Supplies:	*(0.75?)Brazilian Coffee Beans.
+
+ID:             26
+Desc:           Coffee|Organic brewed coffee|Brazilian Rg
+Supplies:	*(1?)Brazilian Coffee Beans.
+
+ID:             27
+Desc:           Coffee|Organic brewed coffee|Brazilian Lg
+Supplies:	*(1.25?)Brazilian Coffee Beans.
+
+ID:             28
+Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Sm
+Supplies:	*(0.75?)Columbian Medium Roast Coffee Beans.
+
+ID:             29
+Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Rg
+Supplies:	*(1?)Columbian Medium Roast Coffee Beans.
+
+ID:             30
+Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Lg
+Supplies:	*(1.25?)Columbian Medium Roast Coffee Beans.
+
+ID:             31
+Desc:           Coffee|Gourmet brewed coffee|Ethiopia Sm
+Supplies:	*(0.75?)Ethiopian Coffee Beans.
+
+ID:             32
+Desc:           Coffee|Gourmet brewed coffee|Ethiopia Rg
+Supplies:	*(1?)Ethiopian Coffee Beans.
+
+ID:             33
+Desc:           Coffee|Gourmet brewed coffee|Ethiopia Lg
+Supplies:	*(1.25?)Ethiopian Coffee Beans.
+
+ID:             34
+Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Sm
+Supplies:	*(0.75?)Jamacian Coffee Beans.
+
+ID:             35
+Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Rg
+Supplies:	*(1?)Jamacian Coffee Beans.
+
+ID:             36
+Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Lg
+Supplies:	*(1.25?)Jamacian Coffee Beans.
+
+ID:             37
+Desc:           Coffee|Barista Espresso|Espresso shot
+Supplies:
+
+ID:             38
+Desc:           Coffee|Barista Espresso|Latte
+Supplies:
+
+ID:             39
+Desc:           Coffee|Barista Espresso|Latte Rg
+Supplies:
+
+ID:             40
+Desc:           Coffee|Barista Espresso|Cappuccino
+Supplies:
+
+ID:             41
+Desc:           Coffee|Barista Espresso|Cappuccino Lg
+Supplies:
+
+ID:             42
+Desc:           Tea|Brewed herbal tea|Lemon Grass Rg
+Supplies:	*(1?)Lemon Grass Tea Leaves.
+
+ID:             43
+Desc:           Tea|Brewed herbal tea|Lemon Grass Lg
+Supplies:	*(1.25?)Lemon Grass Tea Leaves.
+
+ID:             44
+Desc:           Tea|Brewed herbal tea|Peppermint Rg
+Supplies:	*(1?)Peppermint Tea Leaves.
+
+ID:             45
+Desc:           Tea|Brewed herbal tea|Peppermint Lg
+Supplies:	*(1.25?)Peppermint Tea Leaves.
+
+ID:             46
+Desc:           Tea|Brewed Green tea|Serenity Green Tea Rg
+Supplies:	*(1?)Serenity Green Tea Leaves.
+
+ID:             47
+Desc:           Tea|Brewed Green tea|Serenity Green Tea Lg
+Supplies:	*(1.25?)Serenity Grean Tea Leaves.
+
+ID:             48
+Desc:           Tea|Brewed Black tea|English Breakfast Rg
+Supplies:	*(1?)English Breakfast Tea Leaves.
+
+ID:             49
+Desc:           Tea|Brewed Black tea|English Breakfast Lg
+Supplies:	*(1.25?)English Breakfast Tea Leaves
+
+ID:             50
+Desc:           Tea|Brewed Black tea|Earl Grey Rg
+Supplies:	*(1?) Earl Grey Tea Leaves.
+
+ID:             51
+Desc:           Tea|Brewed Black tea|Earl Grey Lg
+Supplies:	*(1.25?)Earl Grey Tea Leaves.
+
+ID:             52
+Desc:           Tea|Brewed Chai tea|Traditional Blend Chai Rg
+Supplies:	*(1?)Traditional Blend Chai Tea Leaves.
+
+ID:             53
+Desc:           Tea|Brewed Chai tea|Traditional Blend Chai Lg
+Supplies:	*(1.25?)Traditional Blend Chai Tea Leaves.
+
+ID:             54
+Desc:           Tea|Brewed Chai tea|Morning Sunrise Chai Rg
+Supplies:	*(1?)Morning Sunrise Chai Tea Leaves.
+
+ID:             55
+Desc:           Tea|Brewed Chai tea|Morning Sunrise Chai Lg
+Supplies:	*(1.25?)Morning Sunrise Chai Tea Leaves.
+
+ID:             56
+Desc:           Tea|Brewed Chai tea|Spicy Eye Opener Chai Rg
+Supplies:	*(1?)Spicy Eye Opener Chai Tea Leaves.
+
+ID:             57
+Desc:           Tea|Brewed Chai tea|Spicy Eye Opener Chai Lg
+Supplies:	*(1.25?)Spicy Eye Opener Chai Tea Leaves.
+
+ID:             58
+Desc:           Drinking Chocolate|Hot chocolate|Dark chocolate Rg
+Supplies:	*(1?)Dark Chocolate Powder.
+
+ID:             59
+Desc:           Drinking Chocolate|Hot chocolate|Dark chocolate Lg
+Supplies:	*(1.25?)Dark Chocolate Powder.
+
+ID:             60
+Desc:           Drinking Chocolate|Hot chocolate|Sustainably Grown Organic Rg
+Supplies:	*(1?)Organic Chocolate Powder.
+
+ID:             61
+Desc:           Drinking Chocolate|Hot chocolate|Sustainably Grown Organic Lg
+Supplies:	*(1.25?)Organic Chocolate Powder.
+
+ID:		62	-- missing data for mayan chili hot chocolate, which needs room for 1 extra entry
+Desc:		XXX	-- also need to create data for that drink (relationship of powders = relationship of drinks?)
+Supplies:	XXX
+
+ID:             63
+Desc:           Flavours|Regular syrup|Carmel syrup
+Supplies:	*Carmel Syrup.
+
+ID:             64
+Desc:           Flavours|Regular syrup|Hazelnut syrup
+Supplies:	*Hazelnut Syrup.
+
+ID:             65
+Desc:           Flavours|Sugar free syrup|Sugar Free Vanilla syrup
+Supplies:	*Sugar Free Vanilla Syrup.
+
+ID:		66
+Desc:		XXX
+Supplies:	XXX
+
+ID:		67
+Desc:		XXX
+Supplies:	XXX
+
+ID:		68
+Desc:		XXX
+Supplies:	XXX
+
+ID:             69
+Desc:           Bakery|Biscotti|Hazelnut Biscotti
+Supplies:	*Hazelnut Biscotti.
+
+ID:             70
+Desc:           Bakery|Scone|Cranberry Scone
+Supplies:	*Cranberry Scone.
+
+ID:             71
+Desc:           Bakery|Pastry|Chocolate Croissant
+Supplies:	*Chocolate Croissant.
+
+ID:             72
+Desc:           Bakery|Scone|Ginger Scone
+Supplies:	*Ginger Scone.
+
+ID:             73
+Desc:           Bakery|Pastry|Almond Croissant
+Supplies:	*Almond Croissant.
+
+ID:             74
+Desc:           Bakery|Biscotti|Ginger Biscotti
+Supplies:	*Ginger Biscotti.
+
+ID:             75
+Desc:           Bakery|Pastry|Croissant
+Supplies:	*Croissant.
+
+ID:             76
+Desc:           Bakery|Biscotti|Chocolate Chip Biscotti
+Supplies:	*Chocolate Chip Biscotti.
+
+ID:             77
+Desc:           Bakery|Scone|Oatmeal Scone
+Supplies:	*Oatmeal Scone.
+
+ID:             78
+Desc:           Bakery|Scone|Scottish Cream Scone
+Supplies:	*Scottish Cream Scone.
+
+ID:             79
+Desc:           Bakery|Scone|Jumbo Savory Scone
+Supplies:	*Jumbo Savory Scone.
+
+ID:		80
+Desc:		XXX
+Supplies:	XXX
+
+ID:             81
+Desc:           Branded|Clothing|I Need My Bean! T-shirt
+Supplies:	*T-shirt.
+
+ID:             82
+Desc:           Branded|Housewares|I Need My Bean! Diner mug
+Supplies:	*Diner Mug.
+
+ID:             83
+Desc:           Branded|Housewares|I Need My Bean! Latte cup
+Supplies:	*Latte Cup.
+
+ID:             84		-- renumber to go with the other flavors?
+Desc:           Flavours|Regular syrup|Chocolate syrup
+Supplies:	*Chocolate Syrup.
+
+ID:		85
+Desc:		XXX
+Supplies:	XXX
+
+ID:		86
+Desc:		XXX
+Supplies:	XXX
+
+ID:             87
+Desc:           Coffee|Barista Espresso|Ouro Brasileiro shot
+Supplies:
