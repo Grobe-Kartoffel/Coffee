@@ -1,6 +1,6 @@
 * this list is to assertain if any product supplies can be derived from the products themselves
 such supplies will be marked by *
-Products that only require a single supply item will have a period at the end of their supply list
+Completed Supply Lists will have a period at the end of them
 
 ID:             1
 Desc:           Coffee beans|Organic Beans|Brazilian - Organic
@@ -88,167 +88,167 @@ Supplies:	Chili Mayan Chocolate Powder.
 
 ID:             22
 Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Sm
-Supplies:	*(0.75?)Old Time Diner Coffee Beans.
+Supplies:	*(0.75?)Old Time Diner Coffee Beans, *Cup Sm.
 
 ID:             23
 Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Rg
-Supplies:	*(1?)Old Time Diner Coffee Beans.
+Supplies:	*(1?)Old Time Diner Coffee Beans, *Cup Rg.
 
 ID:             24
 Desc:           Coffee|Drip coffee|Our Old Time Diner Blend Lg
-Supplies:	*(1.25?)Old Time Diner Coffee Beans.
+Supplies:	*(1.25?)Old Time Diner Coffee Beans, *Cup Lg.
 
 ID:             25
 Desc:           Coffee|Organic brewed coffee|Brazilian Sm
-Supplies:	*(0.75?)Brazilian Coffee Beans.
+Supplies:	*(0.75?)Brazilian Coffee Beans, *Cup Sm.
 
 ID:             26
 Desc:           Coffee|Organic brewed coffee|Brazilian Rg
-Supplies:	*(1?)Brazilian Coffee Beans.
+Supplies:	*(1?)Brazilian Coffee Beans, *Cup Rg.
 
 ID:             27
 Desc:           Coffee|Organic brewed coffee|Brazilian Lg
-Supplies:	*(1.25?)Brazilian Coffee Beans.
+Supplies:	*(1.25?)Brazilian Coffee Beans, *Cup Lg.
 
 ID:             28
 Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Sm
-Supplies:	*(0.75?)Columbian Medium Roast Coffee Beans.
+Supplies:	*(0.75?)Columbian Medium Roast Coffee Beans, *Cup Sm.
 
 ID:             29
 Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Rg
-Supplies:	*(1?)Columbian Medium Roast Coffee Beans.
+Supplies:	*(1?)Columbian Medium Roast Coffee Beans, *Cup Rg.
 
 ID:             30
 Desc:           Coffee|Gourmet brewed coffee|Columbian Medium Roast Lg
-Supplies:	*(1.25?)Columbian Medium Roast Coffee Beans.
+Supplies:	*(1.25?)Columbian Medium Roast Coffee Beans, *Cup Lg.
 
 ID:             31
 Desc:           Coffee|Gourmet brewed coffee|Ethiopia Sm
-Supplies:	*(0.75?)Ethiopian Coffee Beans.
+Supplies:	*(0.75?)Ethiopian Coffee Beans, *Cup Sm.
 
 ID:             32
 Desc:           Coffee|Gourmet brewed coffee|Ethiopia Rg
-Supplies:	*(1?)Ethiopian Coffee Beans.
+Supplies:	*(1?)Ethiopian Coffee Beans, *Cup Rg.
 
 ID:             33
 Desc:           Coffee|Gourmet brewed coffee|Ethiopia Lg
-Supplies:	*(1.25?)Ethiopian Coffee Beans.
+Supplies:	*(1.25?)Ethiopian Coffee Beans, *Cup Lg.
 
 ID:             34
 Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Sm
-Supplies:	*(0.75?)Jamacian Coffee Beans.
+Supplies:	*(0.75?)Jamacian Coffee Beans, *Cup Sm.
 
 ID:             35
 Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Rg
-Supplies:	*(1?)Jamacian Coffee Beans.
+Supplies:	*(1?)Jamacian Coffee Beans, *Cup Rg.
 
 ID:             36
 Desc:           Coffee|Premium brewed coffee|Jamaican Coffee River Lg
-Supplies:	*(1.25?)Jamacian Coffee Beans.
+Supplies:	*(1.25?)Jamacian Coffee Beans, *Cup Lg.
 
 ID:             37
 Desc:           Coffee|Barista Espresso|Espresso shot
-Supplies:
+Supplies:	*Cup Sm
 
 ID:             38
 Desc:           Coffee|Barista Espresso|Latte
-Supplies:
+Supplies:	*Cup Sm
 
 ID:             39
 Desc:           Coffee|Barista Espresso|Latte Rg
-Supplies:
+Supplies:	*Cup Rg
 
 ID:             40
 Desc:           Coffee|Barista Espresso|Cappuccino
-Supplies:
+Supplies:	*Cup Rg
 
 ID:             41
 Desc:           Coffee|Barista Espresso|Cappuccino Lg
-Supplies:
+Supplies:	*Cup Lg
 
 ID:             42
 Desc:           Tea|Brewed herbal tea|Lemon Grass Rg
-Supplies:	*(1?)Lemon Grass Tea Leaves.
+Supplies:	*(1?)Lemon Grass Tea Leaves, *Cup Rg.
 
 ID:             43
 Desc:           Tea|Brewed herbal tea|Lemon Grass Lg
-Supplies:	*(1.25?)Lemon Grass Tea Leaves.
+Supplies:	*(1.25?)Lemon Grass Tea Leaves, *Cup Lg.
 
 ID:             44
 Desc:           Tea|Brewed herbal tea|Peppermint Rg
-Supplies:	*(1?)Peppermint Tea Leaves.
+Supplies:	*(1?)Peppermint Tea Leaves, *Cup Rg.
 
 ID:             45
 Desc:           Tea|Brewed herbal tea|Peppermint Lg
-Supplies:	*(1.25?)Peppermint Tea Leaves.
+Supplies:	*(1.25?)Peppermint Tea Leaves, *Cup Lg.
 
 ID:             46
 Desc:           Tea|Brewed Green tea|Serenity Green Tea Rg
-Supplies:	*(1?)Serenity Green Tea Leaves.
+Supplies:	*(1?)Serenity Green Tea Leaves, *Cup Rg.
 
 ID:             47
 Desc:           Tea|Brewed Green tea|Serenity Green Tea Lg
-Supplies:	*(1.25?)Serenity Grean Tea Leaves.
+Supplies:	*(1.25?)Serenity Grean Tea Leaves, *Cup Lg.
 
 ID:             48
 Desc:           Tea|Brewed Black tea|English Breakfast Rg
-Supplies:	*(1?)English Breakfast Tea Leaves.
+Supplies:	*(1?)English Breakfast Tea Leaves, *Cup Rg.
 
 ID:             49
 Desc:           Tea|Brewed Black tea|English Breakfast Lg
-Supplies:	*(1.25?)English Breakfast Tea Leaves
+Supplies:	*(1.25?)English Breakfast Tea Leaves, *Cup Lg.
 
 ID:             50
 Desc:           Tea|Brewed Black tea|Earl Grey Rg
-Supplies:	*(1?) Earl Grey Tea Leaves.
+Supplies:	*(1?) Earl Grey Tea Leaves, *Cup Rg.
 
 ID:             51
 Desc:           Tea|Brewed Black tea|Earl Grey Lg
-Supplies:	*(1.25?)Earl Grey Tea Leaves.
+Supplies:	*(1.25?)Earl Grey Tea Leaves, *Cup Lg.
 
 ID:             52
 Desc:           Tea|Brewed Chai tea|Traditional Blend Chai Rg
-Supplies:	*(1?)Traditional Blend Chai Tea Leaves.
+Supplies:	*(1?)Traditional Blend Chai Tea Leaves, *Cup Rg.
 
 ID:             53
 Desc:           Tea|Brewed Chai tea|Traditional Blend Chai Lg
-Supplies:	*(1.25?)Traditional Blend Chai Tea Leaves.
+Supplies:	*(1.25?)Traditional Blend Chai Tea Leaves, *Cup Lg.
 
 ID:             54
 Desc:           Tea|Brewed Chai tea|Morning Sunrise Chai Rg
-Supplies:	*(1?)Morning Sunrise Chai Tea Leaves.
+Supplies:	*(1?)Morning Sunrise Chai Tea Leaves, *Cup Rg.
 
 ID:             55
 Desc:           Tea|Brewed Chai tea|Morning Sunrise Chai Lg
-Supplies:	*(1.25?)Morning Sunrise Chai Tea Leaves.
+Supplies:	*(1.25?)Morning Sunrise Chai Tea Leaves, *Cup Lg.
 
 ID:             56
 Desc:           Tea|Brewed Chai tea|Spicy Eye Opener Chai Rg
-Supplies:	*(1?)Spicy Eye Opener Chai Tea Leaves.
+Supplies:	*(1?)Spicy Eye Opener Chai Tea Leaves, *Cup Rg.
 
 ID:             57
 Desc:           Tea|Brewed Chai tea|Spicy Eye Opener Chai Lg
-Supplies:	*(1.25?)Spicy Eye Opener Chai Tea Leaves.
+Supplies:	*(1.25?)Spicy Eye Opener Chai Tea Leaves, *Cup Lg.
 
 ID:             58
 Desc:           Drinking Chocolate|Hot chocolate|Dark chocolate Rg
-Supplies:	*(1?)Dark Chocolate Powder.
+Supplies:	*(1?)Dark Chocolate Powder, *Cup Rg.
 
 ID:             59
 Desc:           Drinking Chocolate|Hot chocolate|Dark chocolate Lg
-Supplies:	*(1.25?)Dark Chocolate Powder.
+Supplies:	*(1.25?)Dark Chocolate Powder, *Cup Lg.
 
 ID:             60
 Desc:           Drinking Chocolate|Hot chocolate|Sustainably Grown Organic Rg
-Supplies:	*(1?)Organic Chocolate Powder.
+Supplies:	*(1?)Organic Chocolate Powder, *Cup Rg.
 
 ID:             61
 Desc:           Drinking Chocolate|Hot chocolate|Sustainably Grown Organic Lg
-Supplies:	*(1.25?)Organic Chocolate Powder.
+Supplies:	*(1.25?)Organic Chocolate Powder, *Cup Lg.
 
 ID:		62	-- missing data for mayan chili hot chocolate, which needs room for 1 extra entry
 Desc:		XXX	-- also need to create data for that drink (relationship of powders = relationship of drinks?)
-Supplies:	XXX
+Supplies:	XXX	-- supplies follow other hot chocolate drinks
 
 ID:             63
 Desc:           Flavours|Regular syrup|Carmel syrup
@@ -348,4 +348,4 @@ Supplies:	XXX
 
 ID:             87
 Desc:           Coffee|Barista Espresso|Ouro Brasileiro shot
-Supplies:
+Supplies:	*Cup Sm
