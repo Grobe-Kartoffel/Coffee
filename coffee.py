@@ -183,8 +183,77 @@ class Accuracy_Data:
             # update progress bar
             self.progress = float(x+1)/float(len(lines))
             progressBar.update(self.progress)
-        #always close files after using them
+        # always close files after using them
         salesFile.close()
+        
+        # need to retroactively add chili mayan hot chocolate Rg and Lg because it is missing from the data
+        # ratios of the popularities of chili mayan chocolate powder to other chocolate powders will be used to extrapolate chili mayan hot chocolate popularity from other hot chocolate drinks
+        
+        # initialize Chili Mayan Hot Chocolate Rg
+        self.products.append([62,"Drinking Chocolate|Hot chocolate|Chili Mayan Rg"])
+        self.supplies.append([])
+        self.prices.append(4.75)
+        self.probabilitySpaces.append( [[0]*15]*7 )
+        
+        # initialize Chili Mayan Hot Chocolate Lg
+        self.products.append([63,"Drinking Chocolate|Hot chocolate|Chili Mayan Lg"])
+        self.supplies.append([])
+        self.prices.append(6.25)
+        self.probabilitySpaces.append( [[0]*15]*7 )
+        
+        # vars needed for extrapolation
+        darkPowIndex,organicPowIndex,chiliPowIndex = 0,0,0
+        darkRgIndex,darkLgIndex = 0,0
+        organicRgIndex,organicLgIndex = 0,0
+        chiliRgIndex,chiliLgIndex = 0,0
+        darkRatio,organicRatio = 0.0,0.0
+        darkValue,organicValue,chiliValue = 0.0,0.0,0.0
+        
+        # find indexes
+        prodIndex = 0
+        while(prodIndex < len(self.products)):
+            match(self.products[prodIndex][0]):
+                case 19: # dark chocolate powder
+                    darkPowIndex = prodIndex
+                case 20: # organic chocolate powder
+                    organicPowIndex = prodIndex
+                case 21: # chili chocolate powder
+                    chiliPowIndex = prodIndex
+                case 58: # dark Rg
+                    darkRgIndex = prodIndex
+                case 59: # dark Lg
+                    darkLgIndex = prodIndex
+                case 60: # organic Rg
+                    organicRgIndex = prodIndex
+                case 61: # organic Lg
+                    organicLgIndex = prodIndex
+                case 62: # chili Rg
+                    chiliRgIndex = prodIndex
+                case 63: # chili Lg
+                    chiliLgIndex = prodIndex
+            prodIndex += 1        
+        
+        # extrapolate data
+        # get an average ratio across an entire day (some hours, powder is not ordered at all, leading to an inaccurate ratio)
+        for hour in range(15): # we don't need to worry about a new ratio for each day, because all days are identical
+            darkValue += float(self.probabilitySpaces[darkPowIndex][0][hour])
+            organicValue += float(self.probabilitySpaces[organicPowIndex][0][hour])
+            chiliValue += float(self.probabilitySpaces[chiliPowIndex][0][hour])
+        darkRatio = chiliValue / darkValue
+        organicRatio = chiliValue / organicValue
+        # use the ratios to find a value for the chili hot chocolate
+        for day in range(7):
+            for hour in range(15):
+                # Rg
+                darkValue = float(self.probabilitySpaces[darkRgIndex][day][hour]) * darkRatio
+                organicValue = float(self.probabilitySpaces[organicRgIndex][day][hour]) * organicRatio
+                    # use the average of the two results to hopefully be more accurate
+                self.probabilitySpaces[chiliRgIndex][day][hour] = int((darkValue+organicValue)/2.0)
+                # Lg
+                darkValue = float(self.probabilitySpaces[darkLgIndex][day][hour]) * darkRatio
+                organicValue = float(self.probabilitySpaces[organicLgIndex][day][hour]) * organicRatio
+                    # use the average of the two results to hopefully be more accurate
+                self.probabilitySpaces[chiliLgIndex][day][hour] = int((darkValue+organicValue)/2.0)                
 
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
