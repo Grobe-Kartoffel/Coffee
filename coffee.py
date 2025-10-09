@@ -96,14 +96,15 @@ class Accuracy_Data:
         dataLoc = 0             # indicates which piece of data we are in, within a line
         self.progress = 0.0     # reset progress
         
+        filename = "SalesData_Sorted.csv"
         try: # make sure the file exists before we start reading
-            salesFile = open("SalesData.csv", "r")
+            salesFile = open(filename, "r")
             salesFile.close()
         except:
             print("ERROR: SalesData.csv could not be found. Aborting processing.")
             return False
         
-        salesFile = open("SalesData.csv", "r")
+        salesFile = open(filename, "r")
         lines = salesFile.readlines()              # this returns a list with every line of text in it
         
         for x in range(len(lines)): # iterate through each line in the data

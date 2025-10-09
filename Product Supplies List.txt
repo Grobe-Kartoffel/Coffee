@@ -246,29 +246,33 @@ ID:             61
 Desc:           Drinking Chocolate|Hot chocolate|Sustainably Grown Organic Lg
 Supplies:	*(1.25?)Organic Chocolate Powder, *Cup Lg.
 
-ID:		62	-- missing data for mayan chili hot chocolate, which needs room for 1 extra entry
+ID:		62	-- missing data for mayan chili hot chocolate, Rg and Lg
 Desc:		XXX	-- also need to create data for that drink (relationship of powders = relationship of drinks?)
 Supplies:	XXX	-- supplies follow other hot chocolate drinks
 
-ID:             63
+ID:		62
+Desc:		Drinking Chocolate|Hot chocolate|Chili Mayan Rg
+Supplies:	*(1?)Chili Mayan Chocolate Powder, *Cup Rg.
+
+ID:		63
+Desc:		Drinking Chocolate|Hot chocolate|Chili Mayan Lg
+Supplies:	*(1.25?)Chili Mayan Chocolate Powder, *Cup Lg.
+
+ID:             64
 Desc:           Flavours|Regular syrup|Carmel syrup
 Supplies:	*Carmel Syrup.
 
-ID:             64
+ID:             65
 Desc:           Flavours|Regular syrup|Hazelnut syrup
 Supplies:	*Hazelnut Syrup.
 
-ID:             65
+ID:             66
 Desc:           Flavours|Sugar free syrup|Sugar Free Vanilla syrup
 Supplies:	*Sugar Free Vanilla Syrup.
 
-ID:		66
-Desc:		XXX
-Supplies:	XXX
-
 ID:		67
-Desc:		XXX
-Supplies:	XXX
+Desc:		Flavours|Regular syrup|Chocolate syrup
+Supplies:	*Chocolate Syrup.
 
 ID:		68
 Desc:		XXX
@@ -334,9 +338,9 @@ ID:             83
 Desc:           Branded|Housewares|I Need My Bean! Latte cup
 Supplies:	*Latte Cup.
 
-ID:             84		-- renumber to go with the other flavors?
-Desc:           Flavours|Regular syrup|Chocolate syrup
-Supplies:	*Chocolate Syrup.
+ID:             84
+Desc:           XXX
+Supplies:	XXX
 
 ID:		85
 Desc:		XXX
