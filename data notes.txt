@@ -1,0 +1,8 @@
+data notes:
+- chocolate syrup, originally ID 84, is now 67
+- carmel, hazelnut, and sugar free syrup, 63-65, were moved to 64-66
+- mayan chili hot chocolate rg and lg added at ID 62-63, data must be created synthetically at runtime
+- mayan chili hot chocolatte Rg is $4.75, Lg is $6.25
+- restaurants price products so that food-cost is 1/3 total cost, our data does the same
+- estimate cups to be 0.05 per cup, regardless of size
+- espressos, lattes, and cappuchinos were guessed to use espresso beans, or primo espresso beans based on personal taste

@@ -68,7 +68,7 @@ Supplies:	*Traditional Blend Chai Tea Leaves.
 
 ID:             17
 Desc:           Loose Tea|Chai tea|Morning Sunrise Chai
-Supplies:	* Morning Sunrise Chai Tea Leaves.
+Supplies:	*Morning Sunrise Chai Tea Leaves.
 
 ID:             18
 Desc:           Loose Tea|Chai tea|Spicy Eye Opener Chai
