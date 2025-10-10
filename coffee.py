@@ -47,7 +47,6 @@ class Accuracy_Data:
     probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
     supplies = []       # supply ID and description for each supply
     supPrices = []      # price of each supply
-    progress = 0.0
     def __init__(self):
         self.products = []       # product ID and description for each product
         self.prodSupplies = []   # list of supplies needed for each product
@@ -55,9 +54,8 @@ class Accuracy_Data:
         self.prodPrices = []     # price of each product
         self.probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
         self.supplies = []       # supply ID and description for each supply
-        self.supPrices = []      # price of each supply        
-        self.progress = 0.0
-    def __str__(self):
+        self.supPrices = []      # price of each supply
+    def __str__(self): # function is called when class object is placed in the print() function
         string = ""
         i = 0
         while(i<len(self.products)):
@@ -89,6 +87,8 @@ class Accuracy_Data:
             i += 1
         return string
     def readSalesData(self,progressBar):
+        progressBar.update(0)
+        
         date = ""               # this is just to know when the day changes
         weekDay = 0             # note that the Data begins on January 1st, 2023, which is a Sunday
                                 # note that we will be keeping track of this internally as it is not in the data
@@ -100,15 +100,15 @@ class Accuracy_Data:
         
         lines = []              # contains all lines of data within the file
         dataLoc = 0             # indicates which piece of data we are in, within a line
-        self.progress = 0.0     # reset progress
         
         filename = "SalesData_Sorted.csv"
         try: # make sure the file exists before we start reading
             salesFile = open(filename, "r")
             salesFile.close()
         except:
-            print("ERROR: SalesData.csv could not be found. Aborting processing.")
-            return False
+            print("ERROR: '"+filename+"' could not be found. Aborting processing.")
+            progressBar.update(-1) # threads do not have return values, but we can manipulate the progress bar to indicate an error
+            return
         
         salesFile = open(filename, "r")
         lines = salesFile.readlines()              # this returns a list with every line of text in it
@@ -188,8 +188,7 @@ class Accuracy_Data:
                 self.prodPrices.append(price)
                 self.probabilitySpaces.append( [[0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
             # update progress bar
-            self.progress = float(x+1)/float(len(lines))
-            progressBar.update(self.progress)
+            progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them
         salesFile.close()
         
@@ -262,10 +261,26 @@ class Accuracy_Data:
                 darkValue = float(self.probabilitySpaces[darkLgIndex][day][hour]) * darkRatio
                 organicValue = float(self.probabilitySpaces[organicLgIndex][day][hour]) * organicRatio
                     # use the average of the two results to hopefully be more accurate
-                self.probabilitySpaces[chiliLgIndex][day][hour] = int((darkValue+organicValue)/2.0)                
+                self.probabilitySpaces[chiliLgIndex][day][hour] = int((darkValue+organicValue)/2.0)
+        return
     def readSupplyData(self,progressBar):
-        return 42
-
+        progressBar.update(0)
+        
+        filename = "SupplyData.csv"
+        try: # make sure the file exists before we start reading
+            salesFile = open(filename, "r")
+            salesFile.close()
+        except:
+            print("ERROR: '"+filename+"' could not be found. Aborting processing.")
+            progressBar.update(-1) # threads do not have return values, but we can manipulate the progress bar to indicate an error
+            return False
+        
+        salesFile = open(filename, "r")
+        lines = salesFile.readlines()              # this returns a list with every line of text in it
+        
+        for x in range(len(lines)): # iterate through each line in the data        
+            ""
+        return True
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
@@ -273,11 +288,10 @@ def main():                                             #every program should ha
     data = Accuracy_Data()              # create class objects
     progressBar = Progress_Manager()
     
-    dataRead = False
+    dataState = 0 # indicate data has not started processing yet
     
     salesDataThread = threading.Thread(target=data.readSalesData, args=(progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(progressBar,))
-    #thread.start()   
     
     while (True):
         
@@ -290,16 +304,28 @@ def main():                                             #every program should ha
             # button, mouse, or keyboard interaction here
         
         # ongoing game logic here  (repeats every 1/60 second)
-        if(data.progress==0.0 and not dataRead):
+        
+        # thread logic for processing data
+        if(progressBar.Value==0.0 and dataState==0):
+            dataState = 1 # indicate sales data is processing
             salesDataThread.start()
-        if(data.progress>=1.0 and not dataRead):
+        if(progressBar.Value<0 and dataState==1):
             salesDataThread.join()
+            print("ERROR: Sales Data could not be found. Aborting program.")
+            return            
+        if(progressBar.Value>=1.0 and dataState==1):
+            salesDataThread.join()
+            print(data)
             return                  # remove this once supplyData is written
-            data.progress = 0.0
+            dataState = 2 # indicate supply data is processing
             supplyDataThread.start()
-            dataRead = True
-        if(data.progress>=1.0 and dataRead):
+        if(progressBar.Value<0 and dataState==2):
             supplyDataThread.join()
+            print("ERROR: Supply Data could not be found. Aborting program.")
+            return            
+        if(progressBar.Value>=1.0 and dataState==2):
+            supplyDataThread.join()
+            dataState = 3 # indicate data is done processing
         
       
         surface.fill(BLACK)                             #set background color
