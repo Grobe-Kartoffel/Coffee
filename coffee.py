@@ -40,16 +40,22 @@ class Progress_Manager: # manages a progress bar for when Accuracy Data is readi
         pygame.draw.rect(surface,BORDERCOLOR,(x-border,y-border,w+border*2,h+border*2),border)
         pygame.draw.rect(surface,PROGRESSCOLOR,(x,y,w*self.Value,h))        
 class Accuracy_Data:
-    products = []   # product ID and description for each product
-    supplies = []   # list of supplies needed for each product
-    prices = []     # price of each product
+    products = []       # product ID and description for each product
+    prodSupplies = []   # list of supplies needed for each product
+    prodSupplyAmt = []  # list of supply amounts needed for each product
+    prodPrices = []     # price of each product
     probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
+    supplies = []       # supply ID and description for each supply
+    supPrices = []      # price of each supply
     progress = 0.0
     def __init__(self):
-        self.products = []   # product ID and description for each product
-        self.supplies = []   # list of supplies needed for each product
-        self.prices = []     # price of each product
-        self.probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product        
+        self.products = []       # product ID and description for each product
+        self.prodSupplies = []   # list of supplies needed for each product
+        self.prodSupplyAmt = []  # list of supply amounts needed for each product
+        self.prodPrices = []     # price of each product
+        self.probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
+        self.supplies = []       # supply ID and description for each supply
+        self.supPrices = []      # price of each supply        
         self.progress = 0.0
     def __str__(self):
         string = ""
@@ -58,13 +64,13 @@ class Accuracy_Data:
             string += f"ID:\t\t{self.products[i][0]}\nDesc:\t\t{self.products[i][1]}\n" # product ID and Description
             j = 0
             string += "Supplies:\t"                                                     # supplies
-            while(j<len(self.supplies[i])):
-                string += self.supplies[i][j]
-                if(j<len(self.supplies[i])-1):
+            while(j<len(self.prodSupplies[i])):
+                string += self.prodSupplies[i][j]
+                if(j<len(self.prodSupplies[i])-1):
                     string += ", "
                 j += 1
             string += "\n"
-            string += f"Price:\t\t{self.prices[i]}\n"                                   # price
+            string += f"Price:\t\t{self.prodPrices[i]}\n"                                   # price
             j = 0
             string += "ProbabilitySpace:\n"
             while(j<len(self.probabilitySpaces[i])):                                    # probability space
@@ -175,10 +181,11 @@ class Accuracy_Data:
                     self.probabilitySpaces[prodIndex][weekDay][hour] += quantity
                     break
                 prodIndex += 1
-            if(prodIndex==len(self.products)):  # we have a new product that we have not read before
+            if(prodIndex==len(self.products)): # we have a new product that we have not read before
                 self.products.append([product,desc])
-                self.supplies.append([])        # this file does not have supply data, append an empty list as a placeholder
-                self.prices.append(price)
+                self.prodSupplies.append([]) # this file does not have supply data, append an empty list as a placeholder
+                self.prodSupplyAmt.append([])
+                self.prodPrices.append(price)
                 self.probabilitySpaces.append( [[0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
             # update progress bar
             self.progress = float(x+1)/float(len(lines))
@@ -191,14 +198,16 @@ class Accuracy_Data:
         
         # initialize Chili Mayan Hot Chocolate Rg
         self.products.append([62,"Drinking Chocolate|Hot chocolate|Chili Mayan Rg"])
-        self.supplies.append([])
-        self.prices.append(4.75)
+        self.prodSupplies.append([])
+        self.prodSupplyAmt.append([])
+        self.prodPrices.append(4.75)
         self.probabilitySpaces.append( [[0]*15]*7 )
         
         # initialize Chili Mayan Hot Chocolate Lg
         self.products.append([63,"Drinking Chocolate|Hot chocolate|Chili Mayan Lg"])
-        self.supplies.append([])
-        self.prices.append(6.25)
+        self.prodSupplies.append([])
+        self.prodSupplyAmt.append([])
+        self.prodPrices.append(6.25)
         self.probabilitySpaces.append( [[0]*15]*7 )
         
         # vars needed for extrapolation
@@ -254,16 +263,21 @@ class Accuracy_Data:
                 organicValue = float(self.probabilitySpaces[organicLgIndex][day][hour]) * organicRatio
                     # use the average of the two results to hopefully be more accurate
                 self.probabilitySpaces[chiliLgIndex][day][hour] = int((darkValue+organicValue)/2.0)                
+    def readSupplyData(self,progressBar):
+        return 42
 
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
     # local  variables
-    data = Accuracy_Data()
+    data = Accuracy_Data()              # create class objects
     progressBar = Progress_Manager()
     
-    thread = threading.Thread(target=data.readSalesData, args=(progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
-    thread.start()   
+    dataRead = False
+    
+    salesDataThread = threading.Thread(target=data.readSalesData, args=(progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
+    supplyDataThread = threading.Thread(target=data.readSupplyData, args=(progressBar,))
+    #thread.start()   
     
     while (True):
         
@@ -276,10 +290,16 @@ def main():                                             #every program should ha
             # button, mouse, or keyboard interaction here
         
         # ongoing game logic here  (repeats every 1/60 second)
-        if(data.progress>=1.0):
-            thread.join()
-            print(data)
-            return
+        if(data.progress==0.0 and not dataRead):
+            salesDataThread.start()
+        if(data.progress>=1.0 and not dataRead):
+            salesDataThread.join()
+            return                  # remove this once supplyData is written
+            data.progress = 0.0
+            supplyDataThread.start()
+            dataRead = True
+        if(data.progress>=1.0 and dataRead):
+            supplyDataThread.join()
         
       
         surface.fill(BLACK)                             #set background color

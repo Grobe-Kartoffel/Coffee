@@ -6,3 +6,4 @@ data notes:
 - restaurants price products so that food-cost is 1/3 total cost, our data does the same
 - estimate cups to be 0.05 per cup, regardless of size
 - espressos, lattes, and cappuchinos were guessed to use espresso beans, or primo espresso beans based on personal taste
+- product descriptions might need to be edited for the game
