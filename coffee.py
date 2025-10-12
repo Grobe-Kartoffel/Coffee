@@ -63,10 +63,17 @@ class Accuracy_Data:
             j = 0
             string += "Supplies:\t"                                                     # supplies
             while(j<len(self.prodSupplies[i])):
-                string += self.prodSupplies[i][j]
-                if(j<len(self.prodSupplies[i])-1):
-                    string += ", "
+                string += f"[ID: {self.prodSupplies[i][j]}"
+                k = 0
+                while(k<len(self.supplies)):
+                    if(self.supplies[k][0]==self.prodSupplies[i][j]):
+                        string += f"; Desc: {self.supplies[k][1]}"
+                        break
+                    k += 1
+                string += f"; Amt: {self.prodSupplyAmt[i][j]}]"
                 j += 1
+                if(j<len(self.prodSupplies[i])):
+                    string += ", "
             string += "\n"
             string += f"Price:\t\t{self.prodPrices[i]}\n"                                   # price
             j = 0
@@ -123,8 +130,6 @@ class Accuracy_Data:
             line = lines[x]
             if(x==0):       # skip the header
                 continue
-            #if(x>=2500):   # limit loop while testing so the size of the data does not break it
-            #    break;
             while( i < len(line)): # iterate through each character in the line (uses while loop so we can also directly access the characters ourselves)
                 match(dataLoc): # how to handle each piece of data
                     case 0: # transaction_id
@@ -266,6 +271,14 @@ class Accuracy_Data:
     def readSupplyData(self,progressBar):
         progressBar.update(0)
         
+        product = 0
+        supply = 0
+        supplyAmt = 0.0
+        supplyAmtPrice = 0.0
+        
+        lines = []
+        dataLoc = 0
+        
         filename = "SupplyData.csv"
         try: # make sure the file exists before we start reading
             salesFile = open(filename, "r")
@@ -278,8 +291,76 @@ class Accuracy_Data:
         salesFile = open(filename, "r")
         lines = salesFile.readlines()              # this returns a list with every line of text in it
         
-        for x in range(len(lines)): # iterate through each line in the data        
-            ""
+        for x in range(len(lines)): # iterate through each line in the data
+            i = 0           # iterator through each line
+            dataLoc = 0     # reset data values
+            product = 0
+            supply = 0
+            supplyAmt = 0.0
+            supplyAmtPrice = 0.0            
+            line = lines[x]
+            if(x==0):       # skip the header
+                continue
+            while( i < len(line)):
+                match(dataLoc):
+                    case 0: # product id
+                        while(line[i]!='|'):
+                            product = product*10 + int(line[i])
+                            i += 1
+                        dataLoc += 1                        
+                    case 1: # supply id
+                        while(line[i]!='|'):
+                            supply = supply*10 + int(line[i])
+                            i += 1
+                        dataLoc += 1                        
+                    case 2: # supply amount
+                        j = 0
+                        while(line[i+j]!='|'):
+                            j += 1
+                        supplyAmt = float(line[i:i+j])
+                        i += j
+                        dataLoc += 1                        
+                    case 3: # supply amount price
+                        supplyAmtPrice = float(line[i:-1])
+                        dataLoc += 1                        
+                i += 1
+            # we have read all the data from the line, now we have to store it
+            supIndex = 0   # I can't be bothered to sort the data right now, so we search the entire list to find which entry we are editing
+            while(supIndex < len(self.supplies)):
+                if(self.supplies[supIndex][0]==supply): # we found a matching entry
+                    if(supplyAmt==1): # update price if we have an exact conversion on this line
+                        self.supPrices[supIndex] = supplyAmtPrice
+                    break
+                supIndex += 1
+            if(supIndex==len(self.supplies)): # we have a new supply that we have not read before
+                self.supplies.append([supply,""])
+                self.supPrices.append(0)
+                if(supplyAmt==1):
+                    self.supPrices[supIndex] = supplyAmtPrice
+            prodIndex = 0
+            while(prodIndex < len(self.products)): # set the desc of the supply
+                if(self.products[prodIndex][0]==supply):
+                    self.supplies[supIndex][1] = self.products[prodIndex][1]
+                if(supply==84):
+                    self.supplies[supIndex][1] = "Cup Sm"
+                if(supply==85):
+                    self.supplies[supIndex][1] = "Cup Rg"
+                if(supply==86):
+                    self.supplies[supIndex][1] = "Cup Lg"
+                prodIndex += 1
+            # we should have handled the supply entry
+            # now we need to update the related product entry
+            prodIndex = 0
+            while(prodIndex < len(self.products)):
+                if(self.products[prodIndex][0]==product):
+                    self.prodSupplies[prodIndex].append(supply)
+                    self.prodSupplyAmt[prodIndex].append(supplyAmt)
+                    break
+                prodIndex += 1
+            # update progress bar
+            progressBar.update( float(x+1)/float(len(lines)) )
+        # always close files after using them
+        salesFile.close()            
         return True
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
@@ -315,8 +396,7 @@ def main():                                             #every program should ha
             return            
         if(progressBar.Value>=1.0 and dataState==1):
             salesDataThread.join()
-            print(data)
-            return                  # remove this once supplyData is written
+            #return                  # remove this once supplyData is written
             dataState = 2 # indicate supply data is processing
             supplyDataThread.start()
         if(progressBar.Value<0 and dataState==2):
@@ -326,6 +406,9 @@ def main():                                             #every program should ha
         if(progressBar.Value>=1.0 and dataState==2):
             supplyDataThread.join()
             dataState = 3 # indicate data is done processing
+        if(dataState==3):
+            print(data)
+            return
         
       
         surface.fill(BLACK)                             #set background color
