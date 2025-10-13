@@ -82,7 +82,7 @@ class Accuracy_Data:
                 string += "["
                 k = 0                
                 while(k<len(self.probabilitySpaces[i][j])):
-                    string += f"{self.probabilitySpaces[i][j][k]}"
+                    string += f"{self.probabilitySpaces[i][j][k]:.5f}"
                     if(k==len(self.probabilitySpaces[i][j])-1):
                         string += "]\n"
                     else:
@@ -191,7 +191,7 @@ class Accuracy_Data:
                 self.prodSupplies.append([]) # this file does not have supply data, append an empty list as a placeholder
                 self.prodSupplyAmt.append([])
                 self.prodPrices.append(price)
-                self.probabilitySpaces.append( [[0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
+                self.probabilitySpaces.append( [[0.0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
             # update progress bar
             progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them
@@ -205,14 +205,14 @@ class Accuracy_Data:
         self.prodSupplies.append([])
         self.prodSupplyAmt.append([])
         self.prodPrices.append(4.75)
-        self.probabilitySpaces.append( [[0]*15]*7 )
+        self.probabilitySpaces.append( [[0.0]*15]*7 )
         
         # initialize Chili Mayan Hot Chocolate Lg
         self.products.append([63,"Drinking Chocolate|Hot chocolate|Chili Mayan Lg"])
         self.prodSupplies.append([])
         self.prodSupplyAmt.append([])
         self.prodPrices.append(6.25)
-        self.probabilitySpaces.append( [[0]*15]*7 )
+        self.probabilitySpaces.append( [[0.0]*15]*7 )
         
         # vars needed for extrapolation
         darkPowIndex,organicPowIndex,chiliPowIndex = 0,0,0
@@ -267,6 +267,17 @@ class Accuracy_Data:
                 organicValue = float(self.probabilitySpaces[organicLgIndex][day][hour]) * organicRatio
                     # use the average of the two results to hopefully be more accurate
                 self.probabilitySpaces[chiliLgIndex][day][hour] = int((darkValue+organicValue)/2.0)
+        
+        # go through probability data of all products and convert them to decimals to be used in sim calculations
+        total = 0
+        for day in range(7):
+            for hour in range(15):
+                total = 0
+                for prod in range(len(self.products)):
+                    total += self.probabilitySpaces[prod][day][hour]
+                for prod in range(len(self.products)):
+                    self.probabilitySpaces[prod][day][hour] = float(self.probabilitySpaces[prod][day][hour]) / float(total)
+                
         return
     def readSupplyData(self,progressBar):
         progressBar.update(0)
