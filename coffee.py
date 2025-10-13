@@ -258,7 +258,7 @@ class Accuracy_Data:
         except:
             print("ERROR: '"+filename+"' could not be found. Aborting processing.")
             progressBar.update(-1) # threads do not have return values, but we can manipulate the progress bar to indicate an error
-            return False
+            return
         
         salesFile = open(filename, "r")
         lines = salesFile.readlines()              # this returns a list with every line of text in it
@@ -331,8 +331,6 @@ class Accuracy_Data:
             progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them
         salesFile.close()            
-        return True
-    def createInventory(self,settings):
         return
 class Settings:
     products = []       # product ID and description for each product
@@ -383,6 +381,10 @@ class Settings:
         with self.lock:
             self.supplies.append([ID,""])
             self.supPrices.append(0) 
+    def addProdSup(self,prodID,supID,supAmt):
+        with self.lock:
+            self.prodSupplies[prodID].append(supID)
+            self.prodSupplyAmt[prodID].append(supAmt)     
     def setSupPrice(self,ID,price):
         with self.lock:
             self.supPrices[ID] = price
@@ -390,10 +392,7 @@ class Settings:
         with self.lock:
             self.supplies[ID][1] = desc
         return
-    def addProdSup(self,prodID,supID,supAmt):
-        with self.lock:
-            self.prodSupplies[prodID].append(supID)
-            self.prodSupplyAmt[prodID].append(supAmt)            
+               
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
