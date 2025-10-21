@@ -1,12 +1,15 @@
 import math, random, pygame, sys, threading
 pygame.init()                                           #initialize game engine
 
-W=800                                                   #set window size
-H=640
+W=1280                                                   #set window size
+H=720
 size=(W,H)
 surface = pygame.display.set_mode(size)
 
-pygame.display.set_caption("Coffee Shop Simulator")          # window title
+pygame.display.set_caption("Claire's Coffee Shop")          # window title
+
+icon = pygame.image.load("icon.png")
+pygame.display.set_icon(icon)
 
 #declare global variables here
 
@@ -406,6 +409,13 @@ def main():                                             #every program should ha
     salesDataThread = threading.Thread(target=data.readSalesData, args=(settings,progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
     
+    # image files
+    logo = pygame.image.load("logo.png").convert_alpha(surface)
+    #logo = pygame.transform.scale(logo, (160,160))
+    logoFrame = 0.0
+    
+    
+    
     while (True):
         
         for event in pygame.event.get():                #captures state of the game - loops thru changes
@@ -415,6 +425,8 @@ def main():                                             #every program should ha
                 sys.exit()
         
             # button, mouse, or keyboard interaction here
+            if(logoFrame<120 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
+                logoFrame = 120
         
         # ongoing game logic here  (repeats every 1/60 second)
         
@@ -441,13 +453,25 @@ def main():                                             #every program should ha
         if(dataState==3):
             print(settings)
             print(data)
-            return
-        
-      
-        surface.fill(BLACK)                             #set background color
+            dataState += 1
+            # return
+        # intro logo logic
+        if(dataState>0 and logoFrame<=180):
+            logoFrame += 1
+        #set background color
+        surface.fill(BLACK)
         
         # drawing code goes here
-        progressBar.displayProgress(W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
+        if(logoFrame<=60):
+            logo.set_alpha(int(255.0*logoFrame/60.0))
+        if(logoFrame>60 and logoFrame<=120):
+            logo.set_alpha(255)
+        if(logoFrame>120 and logoFrame<=180):
+            logo.set_alpha(255 - int(255.0*(logoFrame-120)/60.0) )
+        if(logoFrame<=180):
+            surface.blit(logo, [(W-640)/2,(H-640)/2])
+        else:
+            progressBar.displayProgress(W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
         
         
         pygame.display.update()                          #updates the screen
