@@ -1,7 +1,8 @@
 import math, random, pygame, sys, threading
+from abc import ABC, abstractmethod                     # not sure why abstract classes need to be imported like this, but they do
 pygame.init()                                           #initialize game engine
 
-W=1280                                                   #set window size
+W=1280                                                  #set window size
 H=720
 size=(W,H)
 surface = pygame.display.set_mode(size)
