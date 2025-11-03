@@ -3,14 +3,14 @@ from abc import ABC, abstractmethod                     # not sure why abstract 
 
 pygame.init()                                           # initialize game engine
 
-scale = 4                                               # set scale factor for graphics
-W=320*scale                                             # set window size
-H=180*scale
+SCALE = 4                                               # set scale factor for graphics
+W=320*SCALE                                             # set window size
+H=180*SCALE
 size=(W,H)
 surface = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Claire's Coffee Shop")      # window title
-icon = pygame.image.load("icon.png")
+icon = pygame.image.load("assets/icon.png")
 pygame.display.set_icon(icon)
 
 #declare global variables here
@@ -388,53 +388,97 @@ class Settings:
         return
 class Sim:
     # movement speed will be 1 pixel per frame, or just under 1 unit of space per second
-    class emp:
-        loc = [0,0]
-        offset = [0,0]
-        hand = None
-        job = 0
-        task = 0
-        patience = 100
-        def __init__(self,loc,job,task):
+    def __init__(self):
+        self.mouseXY = [0,0]
+        self.lftClkSt = 0
+        self.employees = []
+        self.customers = []
+        self.objects = []
+        self.demoStarted = False
+        # image assets
+        self.floorPlan = pygame.image.load("assets/floorplan.png").convert_alpha()
+        self.floorPlan = pygame.transform.scale_by(self.floorPlan,SCALE)
+        self.cust11 = pygame.image.load("assets/cust_1_1.png").convert_alpha()
+        self.cust11 = pygame.transform.scale_by(self.cust11,SCALE)
+        self.cust12 = pygame.image.load("assets/cust_1_2.png").convert_alpha()
+        self.cust12 = pygame.transform.scale_by(self.cust12,SCALE)
+        self.cust13 = pygame.image.load("assets/cust_1_3.png").convert_alpha()
+        self.cust13 = pygame.transform.scale_by(self.cust13,SCALE)
+        self.cust14 = pygame.image.load("assets/cust_1_4.png").convert_alpha()
+        self.cust14 = pygame.transform.scale_by(self.cust14,SCALE)
+        self.cust21 = pygame.image.load("assets/cust_2_1.png").convert_alpha()
+        self.cust21 = pygame.transform.scale_by(self.cust21,SCALE)
+        self.cust22 = pygame.image.load("assets/cust_2_2.png").convert_alpha()
+        self.cust22 = pygame.transform.scale_by(self.cust22,SCALE)
+        self.cust23 = pygame.image.load("assets/cust_2_3.png").convert_alpha()
+        self.cust23 = pygame.transform.scale_by(self.cust23,SCALE)
+        self.cust24 = pygame.image.load("assets/cust_2_4.png").convert_alpha()
+        self.cust24 = pygame.transform.scale_by(self.cust24,SCALE)
+        self.cust31 = pygame.image.load("assets/cust_3_1.png").convert_alpha()
+        self.cust31 = pygame.transform.scale_by(self.cust31,SCALE)
+        self.cust32 = pygame.image.load("assets/cust_3_2.png").convert_alpha()
+        self.cust32 = pygame.transform.scale_by(self.cust32,SCALE)
+        self.cust33 = pygame.image.load("assets/cust_3_3.png").convert_alpha()
+        self.cust33 = pygame.transform.scale_by(self.cust33,SCALE)
+        self.cust34 = pygame.image.load("assets/cust_3_4.png").convert_alpha()
+        self.cust34 = pygame.transform.scale_by(self.cust34,SCALE)
+        self.cust41 = pygame.image.load("assets/cust_4_1.png").convert_alpha()
+        self.cust41 = pygame.transform.scale_by(self.cust41,SCALE)
+        self.cust42 = pygame.image.load("assets/cust_4_2.png").convert_alpha()
+        self.cust42 = pygame.transform.scale_by(self.cust42,SCALE)
+        self.cust43 = pygame.image.load("assets/cust_4_3.png").convert_alpha()
+        self.cust43 = pygame.transform.scale_by(self.cust43,SCALE)
+        self.cust44 = pygame.image.load("assets/cust_4_4.png").convert_alpha()
+        self.cust44 = pygame.transform.scale_by(self.cust44,SCALE)
+    class Emp:
+        def __init__(self,ID,loc,job,task):
+            self.ID = ID
             self.loc = [loc[0],loc[1]]
             self.offset = [0,0]
+            self.dir = 0
             self.hand = None
             self.job = job
             self.task = task
             self.patience = 3600
-    class cust:
-        loc = [0,0]
-        offset = [0,0]
-        order = 0
-        hand = None
-        task = 0
-        patience = 300
-        def __init__(self,loc,order,task):
+    class Cust:
+        def __init__(self,ID,loc,order,task):
+            self.ID = ID
             self.loc = [loc[0],loc[1]]
             self.offset = [0,0]
+            self.dir = 0
             self.order = order
             self.hand = None
             self.task = task
             self.patience = 300
-    class obj:
-        ID = 0
-        loc = [0,0]
-        offset = [0,0]
+    class Obj:
         def __init__(self,ID,loc):
             self.ID = ID
             self.loc = [loc[0],loc[1]]
             self.offset = [0,0]
-    
-    def __init__(self):
-        self.MouseXY = [0,0]
-        self.lftClkSt = 0
-        self.Map = [[None]*10]*20  
-        self.demoStarted = False
     def demoSim(self):
-        if(not demoStarted):
-            demoStarted = True
-            pass # all logic for first frame of demo, then return
-        
+        if(not self.demoStarted):
+            self.demoStarted = True
+            self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,0)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking right forever (for testing purposes)
+            return
+        for unit in self.customers:
+            if(unit.task==0): # walk forward
+                unit.offset[0] += 1
+                if(unit.offset[0]>=32): # check if we've walked forward into the next space
+                    unit.offset[0] -= 64
+                    unit.loc[0] += 1
+                    if(unit.loc[0]>=21): # delete if walked off screen
+                        unit.loc[0] = -1 # unit is a separate object from the list element, we cannot delete it here. We'll have to mark it for deletion later
+                        unit.loc[1] = -1 # spawning off screen and walking offscreen will only ever result in 1 negative coord. 2 negative coords will indicate deletion
+                        # for now, this will trigger a new customer being spawned
+                        self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,0))
+        # check for deleted customers
+        i = 0
+        while(i<len(self.customers)):
+            if(self.customers[i].loc[0]==-1 and self.customers[i].loc[1]==-1):
+                del self.customers[i]
+                continue
+            i += 1
+        self.draw()
     def newSim(self):
         pass
     def continueSim(self):
@@ -442,7 +486,7 @@ class Sim:
     def runSim(self):
         pass
     def storeInputs(self,MouseXY,lftClk):
-        self.MouseXY = [int(MouseXY[0])/(16*scale),(int(MouseXY[1])/(16*scale))-1] #scale down to the 20x10 grid of the simulation (first 16y are hud and ignored)
+        self.mouseXY = [(int(MouseXY[0])/(16*scale))+1,int(MouseXY[1])/(16*scale)] #scale down to the 22x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
             self.lftClkSt = 1
             return
@@ -452,6 +496,11 @@ class Sim:
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
             return
+    def draw(self):
+        surface.blit(self.floorPlan, [0,0])                       # coffeeshop
+        custs = [[self.cust11,self.cust12,self.cust13,self.cust14],[self.cust21,self.cust22,self.cust23,self.cust24],[self.cust31,self.cust32,self.cust33,self.cust34],[self.cust41,self.cust42,self.cust43,self.cust44]]
+        for unit in self.customers:
+            surface.blit(custs[unit.ID][unit.dir],[unit.loc[0]*16*SCALE+unit.offset[0],unit.loc[1]*16*SCALE+unit.offset[1]])
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
@@ -459,6 +508,7 @@ def main():                                             #every program should ha
     data = Accuracy_Data()              # create class objects
     progressBar = Progress_Manager()
     settings = Settings()
+    sim = Sim()
     
     dataState = 0 # indicate data has not started processing yet
     
@@ -466,11 +516,9 @@ def main():                                             #every program should ha
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
     
     # image files
-    logo = pygame.image.load("logo.png").convert_alpha(surface)
+    logo = pygame.image.load("assets/logo.png").convert_alpha(surface)
     #logo = pygame.transform.scale(logo, (160,160))
     logoFrame = 0.0
-    
-    
     
     while (True):
         
@@ -481,8 +529,8 @@ def main():                                             #every program should ha
                 sys.exit()
         
             # button, mouse, or keyboard interaction here
-            if(logoFrame<120 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
-                logoFrame = 120
+            if(logoFrame<240 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
+                logoFrame = 240
         
         # ongoing game logic here  (repeats every 1/60 second)
         
@@ -512,26 +560,28 @@ def main():                                             #every program should ha
             dataState += 1
             # return
         # intro logo logic
-        if(dataState>0 and logoFrame<=180):
+        if(dataState>0 and logoFrame<=360):
             logoFrame += 1
         #set background color
         surface.fill(BLACK)
         
         # drawing code goes here
-        if(logoFrame<=60):
-            logo.set_alpha(int(255.0*logoFrame/60.0))
-        if(logoFrame>60 and logoFrame<=120):
+        if(logoFrame<=120):
+            logo.set_alpha(int(255.0*logoFrame/120.0))
+        if(logoFrame>120 and logoFrame<=240):
             logo.set_alpha(255)
-        if(logoFrame>120 and logoFrame<=180):
-            logo.set_alpha(255 - int(255.0*(logoFrame-120)/60.0) )
-        if(logoFrame<=180):
+        if(logoFrame>240 and logoFrame<=360):
+            logo.set_alpha(255 - int(255.0*(logoFrame-240)/120.0) )
+        if(logoFrame<=360):
             surface.blit(logo, [(W-640)/2,(H-640)/2])
         else:
-            progressBar.displayProgress(W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
+            sim.demoSim()
+            #progressBar.displayProgress(W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
+            
         
         
         pygame.display.update()                          #updates the screen
-        clock.tick(60)                                  # FPS for animation (lower number to slow)
+        clock.tick(120)                                  # FPS for animation (lower number to slow)
         
 #----------------------------------------------------------------
 main()                                                   #runs the game
