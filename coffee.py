@@ -462,7 +462,7 @@ class Sim:
             return
         for unit in self.customers:
             if(unit.task==0): # walk forward
-                unit.offset[0] += 1
+                unit.offset[0] += 2
                 if(unit.offset[0]>=32): # check if we've walked forward into the next space
                     unit.offset[0] -= 64
                     unit.loc[0] += 1
@@ -517,7 +517,6 @@ def main():                                             #every program should ha
     
     # image files
     logo = pygame.image.load("assets/logo.png").convert_alpha(surface)
-    #logo = pygame.transform.scale(logo, (160,160))
     logoFrame = 0.0
     
     while (True):
@@ -529,8 +528,8 @@ def main():                                             #every program should ha
                 sys.exit()
         
             # button, mouse, or keyboard interaction here
-            if(logoFrame<240 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
-                logoFrame = 240
+            if(logoFrame<120 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
+                logoFrame = 120
         
         # ongoing game logic here  (repeats every 1/60 second)
         
@@ -560,19 +559,19 @@ def main():                                             #every program should ha
             dataState += 1
             # return
         # intro logo logic
-        if(dataState>0 and logoFrame<=360):
+        if(dataState>0 and logoFrame<=180):
             logoFrame += 1
         #set background color
         surface.fill(BLACK)
         
         # drawing code goes here
-        if(logoFrame<=120):
-            logo.set_alpha(int(255.0*logoFrame/120.0))
-        if(logoFrame>120 and logoFrame<=240):
+        if(logoFrame<=60):
+            logo.set_alpha(int(255.0*logoFrame/60.0))
+        if(logoFrame>60 and logoFrame<=120):
             logo.set_alpha(255)
-        if(logoFrame>240 and logoFrame<=360):
-            logo.set_alpha(255 - int(255.0*(logoFrame-240)/120.0) )
-        if(logoFrame<=360):
+        if(logoFrame>120 and logoFrame<=180):
+            logo.set_alpha(255 - int(255.0*(logoFrame-120)/60.0) )
+        if(logoFrame<=180):
             surface.blit(logo, [(W-640)/2,(H-640)/2])
         else:
             sim.demoSim()
@@ -581,7 +580,7 @@ def main():                                             #every program should ha
         
         
         pygame.display.update()                          #updates the screen
-        clock.tick(120)                                  # FPS for animation (lower number to slow)
+        clock.tick(60)                                  # FPS for animation (lower number to slow)
         
 #----------------------------------------------------------------
 main()                                                   #runs the game
