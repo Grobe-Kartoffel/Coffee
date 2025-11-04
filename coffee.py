@@ -207,7 +207,7 @@ class Accuracy_Data:
                     chiliRgIndex = prodIndex
                 case 63: # chili Lg
                     chiliLgIndex = prodIndex
-            prodIndex += 1        
+            prodIndex += 1
         
         # extrapolate data
         # get an average ratio across an entire day (some hours, powder is not ordered at all, leading to an inaccurate ratio)
@@ -270,7 +270,7 @@ class Accuracy_Data:
             product = 0
             supply = 0
             supplyAmt = 0.0
-            supplyAmtPrice = 0.0            
+            supplyAmtPrice = 0.0
             line = lines[x]
             if(x==0):       # skip the header
                 continue
@@ -280,22 +280,22 @@ class Accuracy_Data:
                         while(line[i]!='|'):
                             product = product*10 + int(line[i])
                             i += 1
-                        dataLoc += 1                        
+                        dataLoc += 1
                     case 1: # supply id
                         while(line[i]!='|'):
                             supply = supply*10 + int(line[i])
                             i += 1
-                        dataLoc += 1                        
+                        dataLoc += 1
                     case 2: # supply amount
                         j = 0
                         while(line[i+j]!='|'):
                             j += 1
                         supplyAmt = float(line[i:i+j])
                         i += j
-                        dataLoc += 1                        
+                        dataLoc += 1
                     case 3: # supply amount price
                         supplyAmtPrice = float(line[i:-1])
-                        dataLoc += 1                        
+                        dataLoc += 1
                 i += 1
             # we have read all the data from the line, now we have to store it
             supIndex = 0   # I can't be bothered to sort the data right now, so we search the entire list to find which entry we are editing
@@ -331,7 +331,7 @@ class Accuracy_Data:
             # update progress bar
             progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them
-        salesFile.close()            
+        salesFile.close()
         return
 class Settings:
     def __init__(self):
@@ -378,7 +378,7 @@ class Settings:
     def addProdSup(self,prodID,supID,supAmt):
         with self.lock:
             self.prodSupplies[prodID].append(supID)
-            self.prodSupplyAmt[prodID].append(supAmt)     
+            self.prodSupplyAmt[prodID].append(supAmt)
     def setSupPrice(self,ID,price):
         with self.lock:
             self.supPrices[ID] = price
@@ -458,19 +458,262 @@ class Sim:
     def demoSim(self):
         if(not self.demoStarted):
             self.demoStarted = True
-            self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,0)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking right forever (for testing purposes)
+            self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,1)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking right forever (for testing purposes)
             return
-        for unit in self.customers:
-            if(unit.task==0): # walk forward
-                unit.offset[0] += 2
-                if(unit.offset[0]>=32): # check if we've walked forward into the next space
-                    unit.offset[0] -= 64
-                    unit.loc[0] += 1
-                    if(unit.loc[0]>=21): # delete if walked off screen
-                        unit.loc[0] = -1 # unit is a separate object from the list element, we cannot delete it here. We'll have to mark it for deletion later
-                        unit.loc[1] = -1 # spawning off screen and walking offscreen will only ever result in 1 negative coord. 2 negative coords will indicate deletion
-                        # for now, this will trigger a new customer being spawned
-                        self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,0))
+        i = 0
+        while(i<len(self.customers)):
+            unit = self.customers[i]
+            match(unit.task):
+                case 0: # walking zombie to test loop
+                    unit.offset[0] += 2
+                    if(unit.offset[0]>=32): # check if we've walked forward into the next space
+                        unit.offset[0] -= 64
+                        unit.loc[0] += 1
+                        if(unit.loc[0]>=21): # delete if walked off screen
+                            unit.loc[0] = -1 # unit is a separate object from the list element, we cannot delete it here. We'll have to mark it for deletion later
+                            unit.loc[1] = -1 # spawning off screen and walking offscreen will only ever result in 1 negative coord. 2 negative coords will indicate deletion
+                            # for now, this will trigger a new customer being spawned
+                            self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,0))
+                case 1: # walking into the coffee shop to order
+                    if(unit.offset[0]<0 and unit.loc[1]==1):    # centering onto current tile
+                        unit.offset[0] += 2
+                        if(unit.offset[0]==0 and unit.loc[0]==8):
+                            unit.dir = 3
+                    elif(unit.offset[1]<0 and unit.loc[0]==8):  # ^
+                        unit.offset[1] += 2
+                        if(unit.offset[1]==0 and unit.loc[1]==4):
+                            unit.dir = 2
+                    elif(unit.offset[0]>0 and unit.loc[1]==4):  # ^
+                        unit.offset[0] -= 2
+                        if(unit.offset[0]==0): # if we got to the front of the line, we are now ordering
+                            unit.task += 1
+                    elif(unit.loc[0]<8 and unit.loc[1]==1):     # need to walk to next tile to the right / obey line rules
+                        space = True
+                        for c in self.customers:
+                            if(c.loc[0] == unit.loc[0]+1 and c.loc[1] == 1):
+                                space = False
+                                break
+                        if(space):
+                            unit.offset[0] += 2
+                            if(unit.offset[0]>=32):
+                                unit.offset[0] -= 64
+                                unit.loc[0] += 1
+                                if(unit.loc[0]==0): # we're going to spawn more on screen as they get in the store
+                                    self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,1))
+                    elif(unit.loc[0]==8 and unit.loc[1]<4):     # need to walk to next tile below / obey line rules
+                        space = True
+                        for c in self.customers:
+                            if(c.task==1 and c.loc[0] == 8 and c.loc[1] == unit.loc[1]+1):
+                                space = False
+                                break
+                        if(space):
+                            unit.offset[1] += 2
+                            if(unit.offset[1]>=32):
+                                unit.offset[1] -= 64
+                                unit.loc[1] += 1
+                    elif(unit.loc[0]==8 and unit.loc[1]==4):    # need to walk to next tile to the left / obey line rules
+                        space = True
+                        for c in self.customers:
+                            if((c.task==1 or c.task==2) and c.loc[0] == 7 and c.loc[1] == 4):
+                                space = False
+                                break
+                        if(space):
+                            unit.offset[0] -= 2
+                            if(unit.offset[0]<=-32):
+                                unit.offset[0] += 64
+                                unit.loc[0] -= 1
+                case 2: # ordering
+                    if(self.mouseXY[0]==7 and self.mouseXY[1]==4 and self.lftClkSt==1): # delete the customer to test things
+                        unit.task += 1
+                        unit.dir = 3
+                case 3: # walking to the pick-up line
+                    if(unit.offset[0]<0):                                           # centering onto current tile
+                        unit.offset[0] += 2
+                        if(unit.offset[0]==0 and unit.loc[0]==9):
+                            unit.dir = 1
+                    elif(unit.loc[0]==7 and unit.loc[1]==5 and unit.offset[1]<0):   # ^
+                        unit.offset[1] += 2
+                        if(unit.offset[1]==0):
+                            unit.dir = 0
+                    elif(unit.loc[0]==9 and unit.offset[1]>0):                      # ^
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]==0 and unit.loc[1]==1):
+                            unit.task += 1 # start waiting in line
+                            unit.dir = 3
+                    elif(unit.loc[0]==7 and unit.loc[1]==4):                        # walk down / out of ordering line
+                        unit.offset[1] += 2
+                        if(unit.offset[1]>=32):
+                            unit.offset[1] -= 64
+                            unit.loc[1] += 1
+                    elif(unit.loc[0]<9 and unit.loc[1]==5):                         # walk to the right
+                        unit.offset[0] += 2
+                        if(unit.offset[0]>=32):
+                            unit.offset[0] -= 64
+                            unit.loc[0] += 1
+                    elif(unit.loc[0]==9):                                           # walk up to start waiting in line
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]<=-32):
+                            unit.offset[1] += 64
+                            unit.loc[1] -= 1
+                case 4: # pick-up line
+                    if(unit.offset[1]<0):                   # centering onto current tile
+                        unit.offset[1] += 2
+                        if(unit.offset[1]==0 and unit.loc[1]==8):
+                            unit.dir = 2
+                    elif(unit.offset[0]>0):                 # ^
+                        unit.offset[0] -= 2
+                        if(unit.offset[0]==0 and unit.loc[0]==7 and unit.loc[1]==8):
+                            unit.task += 1 # wait for order pickup
+                    elif(unit.loc[0]==9 and unit.loc[1]<8): # walk down / obey line rules
+                        space = True
+                        for c in self.customers:
+                            if(c.task==4 and c.loc[0] == 9 and (c.loc[1] == unit.loc[1]+1 or (c.loc[1]==unit.loc[1] and c.offset[1]>unit.offset[1]) ) ):
+                                space = False
+                                break
+                        if(space):
+                            unit.offset[1] += 2
+                            if(unit.offset[1]>=32):
+                                unit.offset[1] -= 64
+                                unit.loc[1] += 1 
+                    elif(unit.loc[1]==8):                   # walk left / obey line rules
+                        space = True
+                        for c in self.customers:
+                            if((c.task==4 or c.task==5) and c.loc[0] == unit.loc[0]-1 and c.loc[1] == 8):
+                                space = False
+                                break
+                        if(space):
+                            unit.offset[0] -= 2
+                            if(unit.offset[0]<=-32):
+                                unit.offset[0] += 64
+                                unit.loc[0] -= 1
+                case 5: # picking up order
+                    if(self.mouseXY[0]==7 and self.mouseXY[1]==8 and self.lftClkSt==1): # delete the customer to test things
+                        unit.task += 1
+                        unit.dir = 3
+                case 6: # finding a seat
+                    if(unit.offset[0]<0):                                                   # centering onto current tile
+                        unit.offset[0] += 2
+                        if(unit.offset[0]==0 and (unit.loc[0] == 10 or unit.loc[0] == 19)):     # start walking up
+                            unit.dir = 1
+                            if(unit.loc[0]==10): # check if the very first seat is available first
+                                spaceR = True
+                                for c in self.customers:
+                                    if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
+                                        spaceR = False
+                                    if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
+                                        spaceR = False
+                                if(spaceR):
+                                    unit.task = 7
+                                    unit.dir = 0
+                        if(unit.offset[0]==0 and unit.loc[0] == 15):                            # start walking down
+                            unit.dir = 3
+                    elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):     # ^
+                        unit.offset[1] += 2
+                        if(unit.offset[1]==0 and unit.loc[0] == 7 and unit.loc[1] == 9):        # start walking right
+                            unit.dir = 0
+                        elif(unit.offset[1]==0 and unit.loc[0] == 15 and unit.loc[1] == 10):    # start walking right
+                            unit.dir = 0
+                        elif(unit.offset[1]==0 and unit.loc[0]==15):                            # look for seats
+                            spaceL = True
+                            spaceR = True
+                            for c in self.customers:
+                                if(c.task==7 and c.loc[0]==unit.loc[0]-1 and c.loc[1]==unit.loc[1]):
+                                    spaceL = False
+                                if(spaceL and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==2):
+                                    spaceL = False
+                                if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
+                                    spaceR = False
+                                if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
+                                    spaceR = False
+                            if(spaceL):
+                                unit.task = 7
+                                unit.dir = 2
+                            elif(spaceR):
+                                unit.task = 7
+                                unit.dir = 0
+                    elif(unit.offset[1]>0 and (unit.loc[0] == 10 or unit.loc[0] == 19)):    # ^
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]==0 and (unit.loc[0] == 10 or unit.loc[0] == 19) and unit.loc[1] == 2):    # start walking right
+                            unit.dir = 0
+                            if(unit.loc[0]==19): # leave the shop
+                                unit.task = 8
+                        elif(unit.offset[1]==0 and unit.loc[0]==10):                                                # look for a seat on the right
+                            spaceR = True
+                            for c in self.customers:
+                                if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
+                                    spaceR = False
+                                if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
+                                    spaceR = False
+                            if(spaceR):
+                                unit.task = 7
+                                unit.dir = 0
+                        elif(unit.offset[1]==0 and unit.loc[0]==19):                                                # look for a seat on the left
+                            spaceL = True
+                            for c in self.customers:
+                                if(c.task==7 and c.loc[0]==unit.loc[0]-1 and c.loc[1]==unit.loc[1]):
+                                    spaceL = False
+                                if(spaceL and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==2):
+                                    spaceL = False
+                            if(spaceL):
+                                unit.task = 7
+                                unit.dir = 0
+                    elif(unit.loc[0]==7 and unit.loc[1]==8):                                # down / out of pick-up line
+                        unit.offset[1] += 2
+                        if(unit.offset[1]>=32):
+                            unit.offset[1] -= 64
+                            unit.loc[1] += 1
+                    elif((unit.loc[0]==10 or unit.loc[0]==19) and unit.loc[1]>2):           # up
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]<=-32):
+                            unit.offset[1] += 64
+                            unit.loc[1] -= 1
+                    elif(unit.loc[0]==15 and unit.loc[1]<10):                               # down
+                        unit.offset[1] += 2
+                        if(unit.offset[1]>=32):
+                            unit.offset[1] -= 64
+                            unit.loc[1] += 1
+                    else:                                                                   # move right otherwise
+                        unit.offset[0] += 2
+                        if(unit.offset[0]>=32):
+                            unit.offset[0] -= 64
+                            unit.loc[0] += 1
+                case 7: # sitting down / eating
+                    if(unit.offset[0]==0 and (unit.loc[0]==11 or unit.loc[0]==14 or unit.loc[0]==16 or unit.loc[0]==19)):   # eat food
+                        unit.patience -= 1
+                        if(unit.patience<=0):
+                            unit.task += 1
+                            unit.dir = 1
+                    elif(unit.dir==0 and ((unit.loc[0]!=11 and unit.loc[0]!=16) or unit.offset[0]!=0) ):                    # take a seat to the right
+                        unit.offset[0] += 2
+                        if(unit.offset[0]>=32):
+                            unit.offset[0] -= 64
+                            unit.loc[0] += 1
+                    elif(unit.dir==2 and unit.loc[0]!=19 and (unit.loc[0]!=14 or unit.offset[0]!=0)):                       # take a seat to the left (not including back row)
+                        unit.offset[0] -= 2
+                        if(unit.offset[0]<=-32):
+                            unit.offset[0] += 64
+                            unit.loc[0] -= 1
+                case 8: # exiting
+                    if(unit.offset[1]>0):   # centering onto current tile
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]==0 and unit.loc[1]==2):
+                            unit.dir = 0
+                    elif(unit.offset[0]<0): # ^
+                        unit.offset[0] += 2
+                        if(unit.offset[0]==0 and unit.loc[0]==21):
+                            unit.loc[0] = -1
+                            unit.loc[1] = -1
+                    elif(unit.loc[1]>2):    # walk up
+                        unit.offset[1] -= 2
+                        if(unit.offset[1]<=-32):
+                            unit.offset[1] += 64
+                            unit.loc[1] -= 1
+                    elif(unit.loc[0]<21):   # walk right off screen
+                        unit.offset[0] += 2
+                        if(unit.offset[0]>32):
+                            unit.offset[0] -= 64
+                            unit.loc[0] += 1
+            i += 1
         # check for deleted customers
         i = 0
         while(i<len(self.customers)):
@@ -486,7 +729,7 @@ class Sim:
     def runSim(self):
         pass
     def storeInputs(self,MouseXY,lftClk):
-        self.mouseXY = [(int(MouseXY[0])/(16*scale))+1,int(MouseXY[1])/(16*scale)] #scale down to the 22x12 grid of the simulation (first and last 16x are offscreen and ignored)
+        self.mouseXY = [int(MouseXY[0]/(16*SCALE)),int(MouseXY[1]/(16*SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
             self.lftClkSt = 1
             return
@@ -499,8 +742,12 @@ class Sim:
     def draw(self):
         surface.blit(self.floorPlan, [0,0])                       # coffeeshop
         custs = [[self.cust11,self.cust12,self.cust13,self.cust14],[self.cust21,self.cust22,self.cust23,self.cust24],[self.cust31,self.cust32,self.cust33,self.cust34],[self.cust41,self.cust42,self.cust43,self.cust44]]
-        for unit in self.customers:
+        # draw customers newest to oldest so that oldest customers show up on top
+        i = len(self.customers)-1
+        while(i>-1):
+            unit = self.customers[i]
             surface.blit(custs[unit.ID][unit.dir],[unit.loc[0]*16*SCALE+unit.offset[0],unit.loc[1]*16*SCALE+unit.offset[1]])
+            i -= 1
 # -------- Main Program Loop -----------
 def main():                                             #every program should have a main function
                                                         #other functions go above main
@@ -509,6 +756,8 @@ def main():                                             #every program should ha
     progressBar = Progress_Manager()
     settings = Settings()
     sim = Sim()
+    mouseXY = [0,0]
+    mouseDown = False
     
     dataState = 0 # indicate data has not started processing yet
     
@@ -520,7 +769,8 @@ def main():                                             #every program should ha
     logoFrame = 0.0
     
     while (True):
-        
+        mouseXY = pygame.mouse.get_pos()
+        mouseDown = pygame.mouse.get_pressed()[0]
         for event in pygame.event.get():                #captures state of the game - loops thru changes
             
             if ( event.type == pygame.QUIT or (event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE)): #end game
@@ -554,8 +804,8 @@ def main():                                             #every program should ha
             supplyDataThread.join()
             dataState = 3 # indicate data is done processing
         if(dataState==3):
-            print(settings)
-            print(data)
+            #print(settings)
+            #print(data)
             dataState += 1
             # return
         # intro logo logic
@@ -574,9 +824,9 @@ def main():                                             #every program should ha
         if(logoFrame<=180):
             surface.blit(logo, [(W-640)/2,(H-640)/2])
         else:
+            sim.storeInputs(mouseXY,mouseDown)
             sim.demoSim()
             #progressBar.displayProgress(W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
-            
         
         
         pygame.display.update()                          #updates the screen
