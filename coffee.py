@@ -9,7 +9,7 @@ H=180*SCALE
 size=(W,H)
 surface = pygame.display.set_mode(size)
 
-pygame.display.set_caption("Claire's Coffee Shop")      # window title
+pygame.display.set_caption("Coffee Shop Simulator")      # window title
 icon = pygame.image.load("assets/icon.png")
 pygame.display.set_icon(icon)
 
@@ -43,7 +43,8 @@ class Progress_Manager: # manages a progress bar for when Accuracy Data is readi
         pygame.draw.rect(surface,PROGRESSCOLOR,(x,y,w*self.Value,h))        
 class Accuracy_Data:
     def __init__(self):
-        self.probabilitySpaces = []  # 7x13 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
+        self.ids = []
+        self.probabilitySpaces = []  # 7x15 (day of week/hour of day) matrix containing the probability of an item ordered at that time on that day, being that product
     def __str__(self): # function is called when class object is placed in the print() function
         string = ""
         i = 0
@@ -161,6 +162,7 @@ class Accuracy_Data:
             if(prodIndex==len(settings.products)): # we have a new product that we have not read before
                 settings.addProd(product,desc,price)
                 self.probabilitySpaces.append( [[0.0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
+                self.ids.append(product)
             # update progress bar
             progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them
@@ -172,10 +174,12 @@ class Accuracy_Data:
         # initialize Chili Mayan Hot Chocolate Rg
         settings.addProd(62,"Drinking Chocolate|Hot chocolate|Chili Mayan Rg",4.75)
         self.probabilitySpaces.append( [[0.0]*15]*7 )
+        self.ids.append(62)
         
         # initialize Chili Mayan Hot Chocolate Lg
         settings.addProd(63,"Drinking Chocolate|Hot chocolate|Chili Mayan Lg",6.25)
         self.probabilitySpaces.append( [[0.0]*15]*7 )
+        self.ids.append(63)
         
         # vars needed for extrapolation
         darkPowIndex,organicPowIndex,chiliPowIndex = 0,0,0
@@ -333,6 +337,23 @@ class Accuracy_Data:
         # always close files after using them
         salesFile.close()
         return
+    def getRndProd(self,hour):
+        #return 58 # hot chocolate, placeholder for now
+        # don't need to worry about the day, because all days are equal
+        # look at self.probabilitySpaces[i][0][hour]
+        # each cell contains the decimal representing a fraction of all orders that day
+        # pick a random decimal from 0.0000 to 1.0000
+        # sequencially subtract each product's decimal from the number
+        # once we are <= zero, we found our product
+        pick = random.random() # random decimal between 0,1
+        i = 0
+        while(i<len(self.ids)):
+            pick -= self.probabilitySpaces[i][0][hour]
+            if(pick<=0 or i==len(self.ids)-1): # break before i can be incremented past the valid range
+                break
+            i += 1
+        return self.ids[i]
+        
 class Settings:
     def __init__(self):
         self.products = []       # product ID and description for each product
@@ -397,6 +418,8 @@ class Sim:
         self.shelfSpace = [0,0]
         self.prod_order = []
         self.demoStarted = False
+        # class references
+        self.acDataRef = None
         # image assets
         # floorplan
         self.floorPlan = pygame.image.load("assets/floorplan.png").convert_alpha()
@@ -508,7 +531,7 @@ class Sim:
     def demoSim(self):
         if(not self.demoStarted):
             self.demoStarted = True
-            self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,1)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking into the shop to order
+            self.customers.append(self.Cust(random.randint(0,3),[-1,1],self.acDataRef.getRndProd(random.randint(0,14)),1)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking into the shop to order
             self.employees.append(self.Emp(random.randint(0,3),[5,4],0,0)) # spawn an employee to take orders, with the task of waiting for a customer to order
             self.employees.append(self.Emp(random.randint(0,3),[5,8],1,0)) # spawn an employee to give orders, with the task of waiting for an order to be made
             self.employees.append(self.Emp(random.randint(0,3),[15,1],2,0)) # spawn an employee to clean tables, with the task of waiting for food to be left on the table
@@ -553,7 +576,7 @@ class Sim:
                                 unit.offset[0] -= 64
                                 unit.loc[0] += 1
                                 if(unit.loc[0]==0): # we're going to spawn more on screen as they get in the store
-                                    self.customers.append(self.Cust(random.randint(0,3),[-1,1],58,1))
+                                    self.customers.append(self.Cust(random.randint(0,3),[-1,1],self.acDataRef.getRndProd(random.randint(0,14)),1))
                     elif(unit.loc[0]==8 and unit.loc[1]<4):     # need to walk to next tile below / obey line rules
                         space = True
                         for c in self.customers:
@@ -855,6 +878,23 @@ class Sim:
                                 if(unit.offset[1]==0):
                                     if(unit.loc[1]==space+4):
                                         unit.dir = 2
+                                        if(unit.loc[0]==1): # we're already at the counter
+                                            # place product
+                                            # update shelf space
+                                            if(unit.order in unit.prod_wet):
+                                                self.shelfSpace[0] += 1
+                                                if(self.shelfSpace[0]>2):
+                                                    self.shelfSpace[0] = -1
+                                            elif(unit.order in unit.prod_dry):
+                                                self.shelfSpace[1] += 1
+                                                if(self.shelfSpace[1]>1):
+                                                    self.shelfSpace[1] = -1
+                                            # inform other employee of order
+                                            self.prod_order.append(unit.order)
+                                            unit.task += 1
+                                            unit.dir = 1
+                                            if(unit.loc[1]==4):
+                                                unit.dir = 0                                            
                             elif(unit.offset[0]>0): # ^
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]==0):
@@ -959,6 +999,8 @@ def main():                                             #every program should ha
     progressBar = Progress_Manager()
     settings = Settings()
     sim = Sim()
+    sim.acDataRef = data
+    
     mouseXY = [0,0]
     mouseDown = False
     
