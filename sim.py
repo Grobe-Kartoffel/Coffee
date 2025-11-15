@@ -13,7 +13,7 @@ class Sim:
         self.employees = []
         self.customers = []
         self.objects = []
-        self.shelfSpace = [0,0]
+        self.shelfSpace = [0,0,0,0,0]
         self.prod_order = []
         self.demoStarted = False
         # class references
@@ -101,6 +101,9 @@ class Sim:
         sup_shr  = [81]                                                                                     # shirts
         prod_wet = [22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,87]
         prod_dry = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,64,65,66,67,69,70,71,72,73,74,75,76,77,78,79,81,82,83]
+        prod_sm  = [22,25,28,31,34,37,38,87]
+        prod_rg  = [23,26,29,32,35,39,40,42,44,46,48,50,52,54,56,58,60,62]
+        prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]
         def __init__(self,ID,loc,job,task):
             self.ID = ID
             self.loc = [loc[0],loc[1]]
@@ -457,12 +460,19 @@ class Sim:
                                        # if -1, no space, don't move
                                        # otherwise, location is [0,4+space]
                             if(unit.order in unit.prod_wet):
-                                space = self.shelfSpace[0]
+                                j = 0
+                                while(j<3):
+                                    if(self.shelfSpace[j]==0):
+                                        space = j
+                                        break
+                                    j += 1
                             elif(unit.order in unit.prod_dry):
-                                if(self.shelfSpace[1]<0):
-                                    space = -1
-                                else:
-                                    space = self.shelfSpace[1]+3
+                                j = 3
+                                while(j<5):
+                                    if(self.shelfSpace[j]==0):
+                                        space = j
+                                        break
+                                    j += 1
                             # try to move if there is room to place the product
                             if(space<0):            # move on to next unit, this one cannot do anything this frame
                                 i += 1
@@ -473,40 +483,16 @@ class Sim:
                                 continue
                             if(unit.offset[1]<0):   # centering
                                 unit.offset[1] += 2
-                                if(unit.offset[1]==0):
-                                    if(unit.loc[1]==space+4):
-                                        unit.dir = 2
-                                        if(unit.loc[0]==1): # we're already at the counter
-                                            # place product
-                                            # update shelf space
-                                            if(unit.order in unit.prod_wet):
-                                                self.shelfSpace[0] += 1
-                                                if(self.shelfSpace[0]>2):
-                                                    self.shelfSpace[0] = -1
-                                            elif(unit.order in unit.prod_dry):
-                                                self.shelfSpace[1] += 1
-                                                if(self.shelfSpace[1]>1):
-                                                    self.shelfSpace[1] = -1
-                                            # inform other employee of order
-                                            self.prod_order.append(unit.order)
-                                            unit.task += 1
-                                            unit.dir = 1
-                                            if(unit.loc[1]==4):
-                                                unit.dir = 0                                            
-                            elif(unit.offset[0]>0): # ^
+                                if(unit.offset[1]==0 and unit.loc[1]==space+4):
+                                    unit.dir = 2
+                                    unit.offset[0] += 2
+                            if(unit.offset[0]>0): # ^
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]==0):
                                     if(unit.loc[0]==1):     # we are in front of the space to place the product
                                         # place product
                                         # update shelf space
-                                        if(unit.order in unit.prod_wet):
-                                            self.shelfSpace[0] += 1
-                                            if(self.shelfSpace[0]>2):
-                                                self.shelfSpace[0] = -1
-                                        elif(unit.order in unit.prod_dry):
-                                            self.shelfSpace[1] += 1
-                                            if(self.shelfSpace[1]>1):
-                                                self.shelfSpace[1] = -1
+                                        self.shelfSpace[unit.loc[1]-4] = 1
                                         # inform other employee of order
                                         self.prod_order.append(unit.order)
                                         unit.task += 1
@@ -516,12 +502,12 @@ class Sim:
                                     elif(unit.loc[1]==3):   # double check that we are in front of the correct product location
                                         if(unit.loc[1]!=space+4):
                                             unit.dir = 3
-                            elif(unit.dir==2):      # walk left
+                            elif(unit.offset[0]<=0 and unit.dir==2):      # walk left
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]<=-32):
                                     unit.offset[0] += 64
                                     unit.loc[0] -= 1
-                            elif(unit.dir==3):      # walk down
+                            elif(unit.offset[1]>=0 and unit.dir==3):      # walk down
                                 unit.offset[1] += 2
                                 if(unit.offset[1]>=32):
                                     unit.offset[1] -= 64
@@ -546,7 +532,125 @@ class Sim:
                                     unit.offset[0] -= 64
                                     unit.loc[0] += 1
                 case 1: # give orders
-                    pass
+                    match(unit.task):
+                        case 0: # wait for an order to be ready
+                            if(len(self.prod_order)!=0):
+                                unit.task += 1
+                                unit.dir = 2
+                        case 1: # grab order from back counter
+                            if(unit.offset[0]>0):                       # centering
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]==0):
+                                    if(unit.loc[0]==1):
+                                        unit.dir = 1
+                                        unit.offset[1] += 2 # push down so that next centering will automatically trigger and check for an object
+                            if(unit.offset[1]>0):                       # ^
+                                unit.offset[1] -= 2
+                                if(unit.offset[1]==0):
+                                    stop = False # extra code to make this work without objects
+                                    if(unit.loc[1]==4):
+                                        stop = True
+                                    for o in self.objects:
+                                        if(o.loc[0]==0 and o.loc[1]==unit.loc[1] and o.ID==self.prod_order[0]):
+                                            stop = True
+                                            break
+                                    if(stop):
+                                        unit.dir = 2
+                                        # grab object
+                                        # unit.order = o.ID
+                                        unit.order = self.prod_order[0]
+                                        # update shelfSpace
+                                        self.shelfSpace[unit.loc[1]-4] = 0
+                                        # update prod_order
+                                        del self.prod_order[0]
+                                        unit.task += 1
+                                        if(unit.order in unit.prod_dry): # skip putting it in a cup if it's dry
+                                            unit.task += 1                                        
+                            elif(unit.offset[0]<=0 and unit.dir==2):    # move left
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]<=-32):
+                                    unit.offset[0] += 64
+                                    unit.loc[0] -= 1
+                            elif(unit.offset[1]<=0 and unit.dir==1):    # move right
+                                unit.offset[1] -= 2
+                                if(unit.offset[1]<=-32):
+                                    unit.offset[1] += 64
+                                    unit.loc[1] -= 1
+                        case 2: # put order in cup
+                            if(unit.dir==2): # take one frame to turn south
+                                unit.dir += 1
+                                i += 1
+                                continue
+                            if(unit.offset[1]<0):                       # centering
+                                unit.offset[1] += 2
+                                if(unit.offset[1]==0 and unit.loc[1]==9):
+                                    unit.dir = 0
+                                    unit.offset[0] -= 2
+                            if(unit.offset[0]<0):                       # ^
+                                unit.offset[0] += 2
+                                if(unit.offset[0]==0):
+                                    if(unit.loc[0]==1 and unit.order in unit.prod_lg) or (unit.loc[0]==2 and unit.order in unit.prod_rg) or (unit.loc[0]==3 and unit.order in unit.prod_sm):
+                                        if(unit.loc[1]<7):
+                                            unit.dir = 3
+                                        if(unit.loc[1]==7):
+                                            unit.dir = 0
+                                        if(unit.loc[1]>7):
+                                            unit.dir = 1
+                                        unit.task += 1
+                            elif(unit.offset[1]>=0 and unit.dir==3):    # move down
+                                unit.offset[1] += 2
+                                if(unit.offset[1]>=32):
+                                    unit.offset[1] -= 64
+                                    unit.loc[1] += 1
+                            elif(unit.offset[0]>=0 and unit.dir==0):    # move right
+                                unit.offset[0] += 2
+                                if(unit.offset[0]>=32):
+                                    unit.offset[0] -= 64
+                                    unit.loc[0] += 1
+                        case 3: # bring order to pick-up counter
+                            if(unit.dir==2):
+                                if(unit.loc[1]<8):
+                                    unit.dir = 3
+                                if(unit.loc[1]==8):
+                                    unit.dir = 2
+                                if(unit.loc[1]>8):
+                                    unit.dir = 1
+                                i += 1
+                                continue
+                            if(unit.offset[0]<0):                   # centering
+                                unit.offset[0] += 2
+                                if(unit.offset[0]==0 and unit.loc[0]==5):
+                                    unit.task += 1
+                            elif(unit.offset[1]<0 and unit.dir==3): # ^
+                                unit.offset[1] += 2
+                                if(unit.offset[1]==0 and unit.loc[1]==8):
+                                    unit.dir = 0
+                            elif(unit.offset[1]>0 and unit.dir==1): # ^
+                                unit.offset[1] -= 2
+                                if(unit.offset[1]==0 and unit.loc[1]==8):
+                                    unit.dir = 0
+                            elif(unit.dir==0):                      # move right
+                                unit.offset[0] += 2
+                                if(unit.offset[0]>=32):
+                                    unit.offset[0] -= 64
+                                    unit.loc[0] += 1
+                            elif(unit.dir==1):                      # move up
+                                unit.offset[1] -= 2
+                                if(unit.offset[1]<=-32):
+                                    unit.offset[1] += 64
+                                    unit.loc[1] -= 1
+                            elif(unit.dir==3):                      # move down
+                                unit.offset[1] += 2
+                                if(unit.offset[1]>=32):
+                                    unit.offset[1] -= 64
+                                    unit.loc[1] += 1
+                        case 4: # wait for order pick-up
+                            if(self.mouseXY[0]==5 and self.mouseXY[1]==7 and self.lftClkSt==1):
+                                for c in self.customers:
+                                    if(c.task==6 and c.loc[0]==7 and c.loc[1]==8 and c.order==unit.order):
+                                        # give customer order
+                                        break
+                                unit.task = 0
                 case 2: # clean tables
                     pass
             i += 1
