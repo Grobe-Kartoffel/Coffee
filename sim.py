@@ -1,3 +1,9 @@
+# TO DO:
+# EMP_1 stops moving when grabbing an item off the very bottom of the back counter
+# back counter and tables need to be extended down by 1-2 pixels to make room for objects to sit properly
+# only customers with drinks should leave their food on the table
+# need to run sim until enough customers have been seated to fill up all tables to confirm customer behavior is correct
+
 import random, pygame
 # IDE may complain that functions from class references from other files aren't defined
 # the program will work anyway
@@ -162,7 +168,6 @@ class Sim:
         def __init__(self,ID,loc):
             self.ID = ID
             self.loc = [loc[0],loc[1]]
-            self.offset = [0,0]
     def demoSim(self):
         if(not self.demoStarted):
             self.demoStarted = True
@@ -212,7 +217,6 @@ class Sim:
                                 unit.loc[0] += 1
                                 if(unit.loc[0]==0): # we're going to spawn more on screen as they get in the store
                                     self.customers.append(self.Cust(random.randint(0,3),[-1,1],self.acDataRef.getRndProd(random.randint(0,14)),1))
-                                    #self.customers.append(self.Cust(random.randint(0,3),[-1,1],random.choice([11,12,13,14,15,16,17,18,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]),1))
                     elif(unit.loc[0]==8 and unit.loc[1]<4):     # need to walk to next tile below / obey line rules
                         space = True
                         for c in self.customers:
@@ -304,8 +308,10 @@ class Sim:
                                 unit.loc[0] -= 1
                 case 5: # picking up order
                     if(self.mouseXY[0]==5 and self.mouseXY[1]==7 and self.lftClkSt==1):
-                        unit.task += 1
-                        unit.dir = 3
+                        for e in self.employees:
+                            if(e.job==1 and e.task==4 and e.loc[0]==5 and e.loc[1]==8):
+                                unit.task += 1
+                                unit.dir = 3
                 case 6: # finding a seat
                     if(unit.offset[0]<0):                                                   # centering onto current tile
                         unit.offset[0] += 2
@@ -314,16 +320,23 @@ class Sim:
                             if(unit.loc[0]==10): # check if the very first seat is available first
                                 spaceR = True
                                 for c in self.customers:
-                                    if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
+                                    if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]): # someone is sitting there
                                         spaceR = False
-                                    if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
+                                        break
+                                    if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0): # someone is planning on sitting there
                                         spaceR = False
+                                        break
+                                if(spaceR):
+                                    for o in self.objects:
+                                        if(o.loc[0]==unit.loc[0]+2 and o.loc[1]==unit.loc[1]): # someone left their food there
+                                            spaceR = False
+                                            break
                                 if(spaceR):
                                     unit.task = 7
                                     unit.dir = 0
                         if(unit.offset[0]==0 and unit.loc[0] == 15):                            # start walking down
                             unit.dir = 3
-                    elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):         # ^
+                    elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):     # ^
                         unit.offset[1] += 2
                         if(unit.offset[1]==0 and unit.loc[0] == 7 and unit.loc[1] == 9):        # start walking right
                             unit.dir = 0
@@ -335,12 +348,24 @@ class Sim:
                             for c in self.customers:
                                 if(c.task==7 and c.loc[0]==unit.loc[0]-1 and c.loc[1]==unit.loc[1]):
                                     spaceL = False
+                                    continue
                                 if(spaceL and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==2):
                                     spaceL = False
+                                    continue
                                 if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
                                     spaceR = False
+                                    continue
                                 if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
                                     spaceR = False
+                                    continue
+                            if(spaceL or spaceR):
+                                for o in self.objects:
+                                    if(o.loc[0]==unit.loc[0]-2 and o.loc[1]==unit.loc[1]): # someone left their food there
+                                        spaceL = False
+                                        continue
+                                    if(o.loc[0]==unit.loc[0]+2 and o.loc[1]==unit.loc[1]): # someone left their food there
+                                        spaceR = False
+                                        continue
                             if(spaceL):
                                 unit.task = 7
                                 unit.dir = 2
@@ -358,8 +383,15 @@ class Sim:
                             for c in self.customers:
                                 if(c.task==7 and c.loc[0]==unit.loc[0]+1 and c.loc[1]==unit.loc[1]):
                                     spaceR = False
+                                    break
                                 if(spaceR and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==0):
                                     spaceR = False
+                                    break
+                            if(spaceR):
+                                for o in self.objects:
+                                    if(o.loc[0]==unit.loc[0]+2 and o.loc[1]==unit.loc[1]):
+                                        spaceR = False
+                                        break
                             if(spaceR):
                                 unit.task = 7
                                 unit.dir = 0
@@ -368,11 +400,18 @@ class Sim:
                             for c in self.customers:
                                 if(c.task==7 and c.loc[0]==unit.loc[0]-1 and c.loc[1]==unit.loc[1]):
                                     spaceL = False
+                                    break
                                 if(spaceL and c.task==7 and c.loc[0]==unit.loc[0] and c.loc[1]==unit.loc[1] and c.dir==2):
                                     spaceL = False
+                                    break
+                            if(spaceL):
+                                for o in self.objects:
+                                    if(o.loc[0]==unit.loc[0]-2 and o.loc[1]==unit.loc[1]):
+                                        spaceR = False
+                                        break
                             if(spaceL):
                                 unit.task = 7
-                                unit.dir = 0
+                                unit.dir = 2
                     elif(unit.loc[0]==7 and unit.loc[1]==8):                                # down / out of pick-up line
                         unit.offset[1] += 2
                         if(unit.offset[1]>=32):
@@ -395,8 +434,21 @@ class Sim:
                             unit.loc[0] += 1
                 case 7: # sitting down / eating
                     if(unit.offset[0]==0 and (unit.loc[0]==11 or unit.loc[0]==14 or unit.loc[0]==16 or unit.loc[0]==19)):   # eat food
+                        if(unit.patience==300):
+                            self.objects.append(self.Obj(unit.order,[unit.loc[0]+(1 if unit.dir==0 else -1),unit.loc[1]]))
                         unit.patience -= 1
                         if(unit.patience<=0):
+                            for o in self.objects: # turn full cups into empty cups
+                                if(o.loc[0]==unit.loc[0]+(1 if unit.dir==0 else -1) and o.loc[1]==unit.loc[1]):
+                                    if(o.ID in self.Emp.prod_lg):
+                                        o.ID = 86
+                                        break
+                                    if(o.ID in self.Emp.prod_rg):
+                                        o.ID = 85
+                                        break
+                                    if(o.ID in self.Emp.prod_sm):
+                                        o.ID = 84
+                                        break
                             unit.task += 1
                             unit.dir = 1
                     elif(unit.dir==0 and ((unit.loc[0]!=11 and unit.loc[0]!=16) or unit.offset[0]!=0) ):                    # take a seat to the right
@@ -467,13 +519,11 @@ class Sim:
                                 if(unit.offset[1]==0):
                                     if(unit.order in unit.sup_mug and unit.loc[1]==5) or (unit.order in unit.sup_cup and unit.loc[1]==6) or (unit.order in unit.sup_shr and unit.loc[1]==7):
                                         unit.dir = 0
-                                        # put object in hand
                                         unit.task += 1
                             elif(unit.offset[1]>0 and unit.dir==1): # ^
                                 unit.offset[1] -= 2
                                 if(unit.offset[1]==0 and unit.loc[1]==3):
                                     if(unit.order in unit.sup_cof and unit.loc[0]==1) or (unit.order in unit.sup_tea and unit.loc[0]==2) or (unit.order in unit.sup_coco and unit.loc[0]==3) or (unit.order in unit.sup_syr and unit.loc[0]==4) or (unit.order in unit.sup_pas and unit.loc[0]==5):
-                                        # put object in hand
                                         unit.task += 1
                             elif(unit.dir==2):                      # moving left
                                 unit.offset[0] -= 2
@@ -509,23 +559,24 @@ class Sim:
                                             break
                                         j += 1
                             # try to move if there is room to place the product
-                            if(unit.orderLoc<0):            # move on to next unit, this one cannot do anything this frame
+                            if(unit.orderLoc<0):                        # move on to next unit, this one cannot do anything this frame
                                 i += 1
                                 continue
-                            if(unit.dir<2):         # turn around and take 1 frame to do so
+                            if(unit.dir<2):                             # turn around and take 1 frame to do so
                                 unit.dir += 2
                                 i += 1
                                 continue
-                            if(unit.offset[1]<0):   # centering
+                            if(unit.offset[1]<0):                       # centering
                                 unit.offset[1] += 2
                                 if(unit.offset[1]==0 and unit.loc[1]==unit.orderLoc+4):
                                     unit.dir = 2
                                     unit.offset[0] += 2
-                            if(unit.offset[0]>0): # ^
+                            if(unit.offset[0]>0):                       # ^
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]==0):
                                     if(unit.loc[0]==1):     # we are in front of the space to place the product
                                         # place product
+                                        self.objects.append(self.Obj(unit.order,[0,unit.loc[1]]) )
                                         # update shelf space
                                         self.shelfSpace[unit.loc[1]-4] = 1
                                         # inform other employee of order
@@ -538,12 +589,12 @@ class Sim:
                                     elif(unit.loc[1]==3):   # double check that we are in front of the correct product location
                                         if(unit.loc[1]!=unit.orderLoc+4):
                                             unit.dir = 3
-                            elif(unit.offset[0]<=0 and unit.dir==2):      # walk left
+                            elif(unit.offset[0]<=0 and unit.dir==2):    # walk left
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]<=-32):
                                     unit.offset[0] += 64
                                     unit.loc[0] -= 1
-                            elif(unit.offset[1]>=0 and unit.dir==3):      # walk down
+                            elif(unit.offset[1]>=0 and unit.dir==3):    # walk down
                                 unit.offset[1] += 2
                                 if(unit.offset[1]>=32):
                                     unit.offset[1] -= 64
@@ -583,25 +634,21 @@ class Sim:
                             if(unit.offset[1]>0):                       # ^
                                 unit.offset[1] -= 2
                                 if(unit.offset[1]==0):
-                                    stop = False # extra code to make this work without objects
-                                    if(unit.loc[1]==4):
-                                        stop = True
                                     for o in self.objects:
                                         if(o.loc[0]==0 and o.loc[1]==unit.loc[1] and o.ID==self.prod_order[0]):
-                                            stop = True
-                                            break
-                                    if(stop):
-                                        unit.dir = 2
-                                        # grab object
-                                        # unit.order = o.ID
-                                        unit.order = self.prod_order[0]
-                                        # update shelfSpace
-                                        self.shelfSpace[unit.loc[1]-4] = 0
-                                        # update prod_order
-                                        del self.prod_order[0]
-                                        unit.task += 1
-                                        if(unit.order in unit.prod_dry): # skip putting it in a cup if it's dry
+                                            unit.dir = 2
+                                            # grab object
+                                            o.loc[0] = -1
+                                            o.loc[1] = -1
+                                            unit.order = o.ID
+                                            # update shelfSpace
+                                            self.shelfSpace[unit.loc[1]-4] = 0
+                                            # update prod_order
+                                            del self.prod_order[0]
                                             unit.task += 1
+                                            if(unit.order in unit.prod_dry): # skip putting it in a cup if it's dry
+                                                unit.task += 1
+                                            break
                             elif(unit.offset[0]<=0 and unit.dir==2):    # move left
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]<=-32):
@@ -656,6 +703,7 @@ class Sim:
                             if(unit.offset[0]<0):                   # centering
                                 unit.offset[0] += 2
                                 if(unit.offset[0]==0 and unit.loc[0]==5):
+                                    self.objects.append(self.Obj(unit.order,[6,8]))
                                     unit.task += 1
                             elif(unit.offset[1]<0 and unit.dir==3): # ^
                                 unit.offset[1] += 2
@@ -685,6 +733,11 @@ class Sim:
                                 for c in self.customers:
                                     if(c.task==6 and c.loc[0]==7 and c.loc[1]==8 and c.order==unit.order):
                                         # give customer order
+                                        for o in self.objects:
+                                            if(o.loc[0]==6 and o.loc[1]==8 and o.ID==c.order):
+                                                o.loc[0] = -1
+                                                o.loc[1] = -1
+                                                break
                                         break
                                 unit.task = 0
                 case 2: # clean tables
@@ -695,6 +748,13 @@ class Sim:
         while(i<len(self.customers)):
             if(self.customers[i].loc[0]==-1 and self.customers[i].loc[1]==-1):
                 del self.customers[i]
+                continue
+            i += 1
+        # check for deleted objects
+        i = 0
+        while(i<len(self.objects)):
+            if(self.objects[i].loc[0]==-1 and self.objects[i].loc[1]==-1):
+                del self.objects[i]
                 continue
             i += 1
         self.draw()
@@ -719,17 +779,20 @@ class Sim:
         # coffeeshop
         self.surface.blit(self.floorPlan, [0,0])
         # permanent objects
-        self.surface.blit(self.cof_bn, [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
-        self.surface.blit(self.tea_lvs,[2*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
-        self.surface.blit(self.chk_pwd,[3*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
-        self.surface.blit(self.syrp,   [4*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
-        self.surface.blit(self.pstry,  [5*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
-        self.surface.blit(self.mug,    [6*16*self.SCALE +3*self.SCALE,  5*16*self.SCALE +3*self.SCALE])
-        self.surface.blit(self.bttl,   [6*16*self.SCALE +3*self.SCALE,  6*16*self.SCALE +3*self.SCALE])
-        self.surface.blit(self.shrt,   [6*16*self.SCALE +3*self.SCALE,  7*16*self.SCALE +3*self.SCALE])
-        self.surface.blit(self.cup_lg1,[1*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
-        self.surface.blit(self.cup_rg1,[2*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
-        self.surface.blit(self.cup_sm1,[3*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cof_bn,  [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.tea_lvs, [2*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.chk_pwd, [3*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.syrp,    [4*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.pstry,   [5*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.mug,     [6*16*self.SCALE +3*self.SCALE,  5*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.bttl,    [6*16*self.SCALE +3*self.SCALE,  6*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.shrt,    [6*16*self.SCALE +3*self.SCALE,  7*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.cup_lg1, [1*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cup_rg1, [2*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cup_sm1, [3*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  4*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  5*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  6*16*self.SCALE +3*self.SCALE])
         #customers
         custs = [[self.cust11,self.cust12,self.cust13,self.cust14],[self.cust21,self.cust22,self.cust23,self.cust24],[self.cust31,self.cust32,self.cust33,self.cust34],[self.cust41,self.cust42,self.cust43,self.cust44]]
         i = len(self.customers)-1 # draw customers newest to oldest so that oldest customers show up on top
@@ -741,3 +804,41 @@ class Sim:
         emps = [[self.emp11,self.emp12,self.emp13,self.emp14],[self.emp21,self.emp22,self.emp23,self.emp24],[self.emp31,self.emp32,self.emp33,self.emp34],[self.emp41,self.emp42,self.emp43,self.emp44]]
         for unit in self.employees:
             self.surface.blit(emps[unit.ID][unit.dir],[unit.loc[0]*16*self.SCALE+unit.offset[0],unit.loc[1]*16*self.SCALE+unit.offset[1]])
+        # objects
+        #obs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,self.cup_lg2,self.syrp,self.syrp,self.syrp,self.syrp,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.pstry,self.shrt,self.mug,self.bttl,self.cup_sm2]
+        for o in self.objects:
+            img = None
+            if(o.ID==81):
+                img = self.shrt
+            elif(o.ID==82):
+                img = self.mug
+            elif(o.ID==83):
+                img = self.bttl
+            elif(o.ID==84):
+                img = self.cup_sm1
+            elif(o.ID==85):
+                img = self.cup_rg1
+            elif(o.ID==86):
+                img = self.cup_lg1
+            elif(o.ID in self.Emp.sup_pas):
+                img = self.pstry
+            elif(o.ID in self.Emp.sup_syr):
+                img = self.syrp
+            elif(o.ID in self.Emp.prod_wet and o.loc[0]==0):
+                img = self.cof_mkr2
+            elif(o.ID in self.Emp.prod_sm):
+                img = self.cup_sm2
+            elif(o.ID in self.Emp.prod_rg):
+                img = self.cup_rg2
+            elif(o.ID in self.Emp.prod_lg):
+                img = self.cup_lg2
+            elif(o.ID in self.Emp.sup_cof):
+                img = self.cof_bn
+            elif(o.ID in self.Emp.sup_tea):
+                img = self.tea_lvs
+            elif(o.ID in self.Emp.sup_coco):
+                img = self.chk_pwd
+            else:                            # this obj should only show up on the back counter, if we see it on the tables, we know something's wrong
+                img = self.cof_mkr1
+            # draw object
+            self.surface.blit(img,[o.loc[0]*16*self.SCALE +3*self.SCALE, o.loc[1]*16*self.SCALE +3*self.SCALE])
