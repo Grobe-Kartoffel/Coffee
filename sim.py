@@ -88,6 +88,39 @@ class Sim:
         self.emp43 = pygame.transform.scale_by(self.emp43,SCALE)
         self.emp44 = pygame.image.load("assets/emp_4_4.png").convert_alpha()
         self.emp44 = pygame.transform.scale_by(self.emp44,SCALE)
+        # objects
+        self.bttl = pygame.image.load("assets/bttl.png").convert_alpha()
+        self.bttl = pygame.transform.scale_by(self.bttl,SCALE)
+        self.chk_pwd = pygame.image.load("assets/chk_pwd.png").convert_alpha()
+        self.chk_pwd = pygame.transform.scale_by(self.chk_pwd,SCALE)
+        self.cof_bn = pygame.image.load("assets/cof_bn.png").convert_alpha()
+        self.cof_bn = pygame.transform.scale_by(self.cof_bn,SCALE)
+        self.cof_mkr1 = pygame.image.load("assets/cof_mkr_1.png").convert_alpha()
+        self.cof_mkr1 = pygame.transform.scale_by(self.cof_mkr1,SCALE)
+        self.cof_mkr2 = pygame.image.load("assets/cof_mkr_2.png").convert_alpha()
+        self.cof_mkr2 = pygame.transform.scale_by(self.cof_mkr2,SCALE)
+        self.cup_lg1 = pygame.image.load("assets/cup_lg_1.png").convert_alpha()
+        self.cup_lg1 = pygame.transform.scale_by(self.cup_lg1,SCALE)
+        self.cup_lg2 = pygame.image.load("assets/cup_lg_2.png").convert_alpha()
+        self.cup_lg2 = pygame.transform.scale_by(self.cup_lg2,SCALE)
+        self.cup_rg1 = pygame.image.load("assets/cup_rg_1.png").convert_alpha()
+        self.cup_rg1 = pygame.transform.scale_by(self.cup_rg1,SCALE)
+        self.cup_rg2 = pygame.image.load("assets/cup_rg_2.png").convert_alpha()
+        self.cup_rg2 = pygame.transform.scale_by(self.cup_rg2,SCALE)
+        self.cup_sm1 = pygame.image.load("assets/cup_sm_1.png").convert_alpha()
+        self.cup_sm1 = pygame.transform.scale_by(self.cup_sm1,SCALE)
+        self.cup_sm2 = pygame.image.load("assets/cup_sm_2.png").convert_alpha()
+        self.cup_sm2 = pygame.transform.scale_by(self.cup_sm2,SCALE)
+        self.mug = pygame.image.load("assets/mug.png").convert_alpha()
+        self.mug = pygame.transform.scale_by(self.mug,SCALE)
+        self.pstry = pygame.image.load("assets/pstry.png").convert_alpha()
+        self.pstry = pygame.transform.scale_by(self.pstry,SCALE)
+        self.shrt = pygame.image.load("assets/shrt.png").convert_alpha()
+        self.shrt = pygame.transform.scale_by(self.shrt,SCALE)
+        self.syrp = pygame.image.load("assets/syrp.png").convert_alpha()
+        self.syrp = pygame.transform.scale_by(self.syrp,SCALE)
+        self.tea_lvs = pygame.image.load("assets/tea_lvs.png").convert_alpha()
+        self.tea_lvs = pygame.transform.scale_by(self.tea_lvs,SCALE)
     class Emp:
         # static vars belonging to class, not one individual instance
         # lists containing the orders that require each of the supply types so that emp1 knows where to get the proper supply item
@@ -113,6 +146,7 @@ class Sim:
             self.job = job
             self.task = task
             self.order = 0
+            self.orderLoc = -1
             self.patience = 3600
     class Cust:
         def __init__(self,ID,loc,order,task):
@@ -178,6 +212,7 @@ class Sim:
                                 unit.loc[0] += 1
                                 if(unit.loc[0]==0): # we're going to spawn more on screen as they get in the store
                                     self.customers.append(self.Cust(random.randint(0,3),[-1,1],self.acDataRef.getRndProd(random.randint(0,14)),1))
+                                    #self.customers.append(self.Cust(random.randint(0,3),[-1,1],random.choice([11,12,13,14,15,16,17,18,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]),1))
                     elif(unit.loc[0]==8 and unit.loc[1]<4):     # need to walk to next tile below / obey line rules
                         space = True
                         for c in self.customers:
@@ -288,7 +323,7 @@ class Sim:
                                     unit.dir = 0
                         if(unit.offset[0]==0 and unit.loc[0] == 15):                            # start walking down
                             unit.dir = 3
-                    elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):     # ^
+                    elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):         # ^
                         unit.offset[1] += 2
                         if(unit.offset[1]==0 and unit.loc[0] == 7 and unit.loc[1] == 9):        # start walking right
                             unit.dir = 0
@@ -456,25 +491,25 @@ class Sim:
                                     unit.offset[1] -= 64
                                     unit.loc[1] += 1
                         case 2: # placing a base ingredient on the back counter
-                            space = -1 # vertical offset from top of shelf, indicating where to place product
-                                       # if -1, no space, don't move
-                                       # otherwise, location is [0,4+space]
-                            if(unit.order in unit.prod_wet):
-                                j = 0
-                                while(j<3):
-                                    if(self.shelfSpace[j]==0):
-                                        space = j
-                                        break
-                                    j += 1
-                            elif(unit.order in unit.prod_dry):
-                                j = 3
-                                while(j<5):
-                                    if(self.shelfSpace[j]==0):
-                                        space = j
-                                        break
-                                    j += 1
+                            if(unit.orderLoc==-1): # vertical offset from top of shelf, indicating where to place product
+                                                   # if -1, no space, don't move
+                                                   # otherwise, location is [0,4+space]
+                                if(unit.order in unit.prod_wet):
+                                    j = 0
+                                    while(j<3):
+                                        if(self.shelfSpace[j]==0):
+                                            unit.orderLoc = j
+                                            break
+                                        j += 1
+                                elif(unit.order in unit.prod_dry):
+                                    j = 3
+                                    while(j<5):
+                                        if(self.shelfSpace[j]==0):
+                                            unit.orderLoc = j
+                                            break
+                                        j += 1
                             # try to move if there is room to place the product
-                            if(space<0):            # move on to next unit, this one cannot do anything this frame
+                            if(unit.orderLoc<0):            # move on to next unit, this one cannot do anything this frame
                                 i += 1
                                 continue
                             if(unit.dir<2):         # turn around and take 1 frame to do so
@@ -483,7 +518,7 @@ class Sim:
                                 continue
                             if(unit.offset[1]<0):   # centering
                                 unit.offset[1] += 2
-                                if(unit.offset[1]==0 and unit.loc[1]==space+4):
+                                if(unit.offset[1]==0 and unit.loc[1]==unit.orderLoc+4):
                                     unit.dir = 2
                                     unit.offset[0] += 2
                             if(unit.offset[0]>0): # ^
@@ -497,10 +532,11 @@ class Sim:
                                         self.prod_order.append(unit.order)
                                         unit.task += 1
                                         unit.dir = 1
+                                        unit.orderLoc = -1
                                         if(unit.loc[1]==4):
                                             unit.dir = 0
                                     elif(unit.loc[1]==3):   # double check that we are in front of the correct product location
-                                        if(unit.loc[1]!=space+4):
+                                        if(unit.loc[1]!=unit.orderLoc+4):
                                             unit.dir = 3
                             elif(unit.offset[0]<=0 and unit.dir==2):      # walk left
                                 unit.offset[0] -= 2
@@ -565,7 +601,7 @@ class Sim:
                                         del self.prod_order[0]
                                         unit.task += 1
                                         if(unit.order in unit.prod_dry): # skip putting it in a cup if it's dry
-                                            unit.task += 1                                        
+                                            unit.task += 1
                             elif(unit.offset[0]<=0 and unit.dir==2):    # move left
                                 unit.offset[0] -= 2
                                 if(unit.offset[0]<=-32):
@@ -682,6 +718,18 @@ class Sim:
     def draw(self):
         # coffeeshop
         self.surface.blit(self.floorPlan, [0,0])
+        # permanent objects
+        self.surface.blit(self.cof_bn, [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.tea_lvs,[2*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.chk_pwd,[3*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.syrp,   [4*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.pstry,  [5*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
+        self.surface.blit(self.mug,    [6*16*self.SCALE +3*self.SCALE,  5*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.bttl,   [6*16*self.SCALE +3*self.SCALE,  6*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.shrt,   [6*16*self.SCALE +3*self.SCALE,  7*16*self.SCALE +3*self.SCALE])
+        self.surface.blit(self.cup_lg1,[1*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cup_rg1,[2*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
+        self.surface.blit(self.cup_sm1,[3*16*self.SCALE +3*self.SCALE, 10*16*self.SCALE +5*self.SCALE])
         #customers
         custs = [[self.cust11,self.cust12,self.cust13,self.cust14],[self.cust21,self.cust22,self.cust23,self.cust24],[self.cust31,self.cust32,self.cust33,self.cust34],[self.cust41,self.cust42,self.cust43,self.cust44]]
         i = len(self.customers)-1 # draw customers newest to oldest so that oldest customers show up on top
