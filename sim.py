@@ -145,7 +145,6 @@ class Sim:
             self.loc = [loc[0],loc[1]]
             self.offset = [0,0]
             self.dir = 0
-            self.hand = None
             self.job = job
             self.task = task
             self.order = 0
@@ -158,7 +157,6 @@ class Sim:
             self.offset = [0,0]
             self.dir = 0
             self.order = order
-            self.hand = None
             self.task = task
             self.patience = 300
     class Obj:
@@ -747,7 +745,129 @@ class Sim:
                                         break
                                 unit.task = 0
                 case 2: # clean tables
-                    pass
+                    match(unit.task):
+                        case 0: # wait for cups to be left on table
+                            unit.dir = 3
+                            for o in self.objects:
+                                if(o.ID in [84,85,86]):
+                                    unit.orderLoc = [o.loc[0],o.loc[1]]
+                                    unit.task += 1
+                                    break
+                        case 1: # walk toward cup
+                            if(unit.offset[1]<0):                   # centering
+                                unit.offset[1] += 2
+                                if(unit.offset[1]==0):
+                                    if(unit.loc[1]==2 and unit.orderLoc[0]==unit.loc[0]-3):
+                                        unit.dir = 2
+                                    elif(unit.loc[1]==2 and unit.orderLoc[0]==unit.loc[0]+3):
+                                        unit.dir = 0
+                                    elif(unit.loc[1]==unit.orderLoc[1]):
+                                        unit.dir = 0 if(unit.loc[0]<unit.orderLoc[0]) else 2
+                                        unit.task += 1
+                            elif(unit.dir==0 and unit.offset[0]<0): # ^
+                                unit.offset[0] += 2
+                                if(unit.offset[0]==0 and unit.loc[0]==19):
+                                    unit.dir = 3
+                            elif(unit.dir==2 and unit.offset[0]>0): # ^
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]==0 and unit.loc[0]==10):
+                                    unit.dir = 3
+                            elif(unit.dir==3):                      # walk down
+                                unit.offset[1] += 2
+                                if(unit.offset[1]>=32):
+                                    unit.offset[1] -= 64
+                                    unit.loc[1] += 1
+                            elif(unit.dir==0):                      # walk right
+                                unit.offset[0] += 2
+                                if(unit.offset[0]>=32):
+                                    unit.offset[0] -= 64
+                                    unit.loc[0] += 1
+                            elif(unit.dir==2):                      # walk left
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]<=-32):
+                                    unit.offset[0] += 64
+                                    unit.loc[0] -= 1
+                        case 2: # grab cup
+                            if(unit.dir==0 and unit.offset[0]<0):   # centering
+                                unit.offset[0] += 2
+                                if(unit.offset[0]==0):
+                                    if(unit.loc[0]==11 or unit.loc[0]==16):
+                                        for o in self.objects:
+                                            if(o.loc[0]==unit.orderLoc[0] and o.loc[1]==unit.orderLoc[1]):
+                                                o.loc[0] = -1
+                                                o.loc[1] = -1
+                                                unit.dir = 2
+                                                break
+                                    elif(unit.loc[0]==15):
+                                        unit.dir = 1
+                                        unit.task += 1
+                            elif(unit.dir==2 and unit.offset[0]>0): # ^
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]==0):
+                                    if(unit.loc[0]==14):
+                                        for o in self.objects:
+                                            if(o.loc[0]==unit.orderLoc[0] and o.loc[1]==unit.orderLoc[1]):
+                                                o.loc[0] = -1
+                                                o.loc[1] = -1
+                                                unit.dir = 0
+                                                break
+                                    elif(unit.loc[0]==10 or unit.loc[0]==15):
+                                        unit.dir = 1
+                                        unit.task += 1   
+                            elif(unit.dir==0):                      # move right
+                                unit.offset[0] += 2
+                                if(unit.offset[0]>=32):
+                                    unit.offset[0] -= 64
+                                    unit.loc[0] += 1
+                            elif(unit.dir==2):                      # move left
+                                if(unit.loc[0]==19):
+                                    for o in self.objects:
+                                        if(o.loc[0]==unit.orderLoc[0] and o.loc[1]==unit.orderLoc[1]):
+                                            o.loc[0] = -1
+                                            o.loc[1] = -1
+                                            unit.dir = 1
+                                            unit.task += 1
+                                            break                                    
+                                else:
+                                    unit.offset[0] -= 2
+                                    if(unit.offset[0]<=-32):
+                                        unit.offset[0] += 64
+                                        unit.loc[0] -= 1
+                        case 3: # throw out cup
+                            if(unit.offset[1]>0):                   # centering
+                                unit.offset[1] -= 2
+                                if(unit.offset[1]==0):
+                                    if(unit.loc[1]==2 and unit.loc[0]!=19):
+                                        unit.dir = 0
+                                    elif(unit.loc[1]==1):
+                                        unit.dir = 3
+                                        unit.task = 0
+                            elif(unit.dir==0 and unit.offset[0]<0): # ^
+                                unit.offset[0] += 2
+                                if(unit.offset[0]==0 and unit.loc[0]==19):
+                                    unit.dir = 1
+                            elif(unit.dir==2 and unit.offset[0]>0): # ^
+                                unit.offset[0] -= 2
+                                if(unit.offset[0]==0 and unit.loc[0]==15):
+                                    unit.dir = 1
+                            elif(unit.dir==1):                      # move up
+                                if(unit.loc[0]==19 and unit.loc[1]==2):
+                                    unit.dir = 2
+                                else:
+                                    unit.offset[1] -= 2
+                                    if(unit.offset[1]<=-32):
+                                        unit.offset[1] += 64
+                                        unit.loc[1] -=1
+                            elif(unit.dir==0):                      # move right
+                                unit.offset[0] += 2
+                                if(unit.offset[0]>=32):
+                                    unit.offset[0] -= 64
+                                    unit.loc[0] += 1
+                            elif(unit.dir==2):                      # move left
+                                unit.offset[0] -=2
+                                if(unit.offset[0]<=-32):
+                                    unit.offset[0] += 64
+                                    unit.loc[0] -= 1
             i += 1
         # check for deleted customers
         i = 0
