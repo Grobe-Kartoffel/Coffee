@@ -1,8 +1,5 @@
 # TO DO:
-# EMP_1 stops moving when grabbing an item off the very bottom of the back counter
 # back counter and tables need to be extended down by 1-2 pixels to make room for objects to sit properly
-# only customers with drinks should leave their food on the table
-# need to run sim until enough customers have been seated to fill up all tables to confirm customer behavior is correct
 
 import random, pygame
 # IDE may complain that functions from class references from other files aren't defined
@@ -334,6 +331,7 @@ class Sim:
                                 if(spaceR):
                                     unit.task = 7
                                     unit.dir = 0
+                                    unit.patience = 300
                         if(unit.offset[0]==0 and unit.loc[0] == 15):                            # start walking down
                             unit.dir = 3
                     elif(unit.offset[1]<0 and (unit.loc[0] == 7 or unit.loc[0] == 15)):     # ^
@@ -369,9 +367,11 @@ class Sim:
                             if(spaceL):
                                 unit.task = 7
                                 unit.dir = 2
+                                unit.patience = 300
                             elif(spaceR):
                                 unit.task = 7
                                 unit.dir = 0
+                                unit.patience = 300
                     elif(unit.offset[1]>0 and (unit.loc[0] == 10 or unit.loc[0] == 19)):    # ^
                         unit.offset[1] -= 2
                         if(unit.offset[1]==0 and (unit.loc[0] == 10 or unit.loc[0] == 19) and unit.loc[1] == 2):    # start walking right
@@ -395,6 +395,7 @@ class Sim:
                             if(spaceR):
                                 unit.task = 7
                                 unit.dir = 0
+                                unit.patience = 300
                         elif(unit.offset[1]==0 and unit.loc[0]==19):                                                # look for a seat on the left
                             spaceL = True
                             for c in self.customers:
@@ -406,12 +407,13 @@ class Sim:
                                     break
                             if(spaceL):
                                 for o in self.objects:
-                                    if(o.loc[0]==unit.loc[0]-2 and o.loc[1]==unit.loc[1]):
-                                        spaceR = False
+                                    if(o.loc[0]==unit.loc[0]-1 and o.loc[1]==unit.loc[1]):
+                                        spaceL = False
                                         break
                             if(spaceL):
                                 unit.task = 7
                                 unit.dir = 2
+                                unit.patience = 300
                     elif(unit.loc[0]==7 and unit.loc[1]==8):                                # down / out of pick-up line
                         unit.offset[1] += 2
                         if(unit.offset[1]>=32):
@@ -443,11 +445,15 @@ class Sim:
                                     if(o.ID in self.Emp.prod_lg):
                                         o.ID = 86
                                         break
-                                    if(o.ID in self.Emp.prod_rg):
+                                    elif(o.ID in self.Emp.prod_rg):
                                         o.ID = 85
                                         break
-                                    if(o.ID in self.Emp.prod_sm):
+                                    elif(o.ID in self.Emp.prod_sm):
                                         o.ID = 84
+                                        break
+                                    else:
+                                        o.loc[0] = -1
+                                        o.loc[1] = -1
                                         break
                             unit.task += 1
                             unit.dir = 1
@@ -695,7 +701,7 @@ class Sim:
                                 if(unit.loc[1]<8):
                                     unit.dir = 3
                                 if(unit.loc[1]==8):
-                                    unit.dir = 2
+                                    unit.dir = 0
                                 if(unit.loc[1]>8):
                                     unit.dir = 1
                                 i += 1
