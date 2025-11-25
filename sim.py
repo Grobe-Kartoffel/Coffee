@@ -14,7 +14,8 @@ class Sim:
         self.mouseXY = [0,0]
         self.lftClkSt = 0
         self.points = 0
-        self.time = 0
+        self.time = 3600
+        self.maxTime = 3600
         self.employees = []
         self.customers = []
         self.objects = []
@@ -27,6 +28,10 @@ class Sim:
         # floorplan
         self.floorPlan = pygame.image.load("assets/floorplan.png").convert_alpha()
         self.floorPlan = pygame.transform.scale_by(self.floorPlan,SCALE)
+        self.hud = pygame.image.load("assets/hud.png").convert_alpha()
+        self.hud = pygame.transform.scale_by(self.hud,SCALE)
+        self.tmr_cap = pygame.image.load("assets/tmr_cap.png").convert_alpha()
+        self.tmr_cap = pygame.transform.scale_by(self.tmr_cap,SCALE)
         # customers
         self.cust11 = pygame.image.load("assets/cust_1_1.png").convert_alpha()
         self.cust11 = pygame.transform.scale_by(self.cust11,SCALE)
@@ -938,6 +943,9 @@ class Sim:
                 continue
             i += 1
         self.draw()
+        self.time -= 1
+        if(self.time<0):
+            self.time = 3600
     def newSim(self):
         pass
     def continueSim(self):
@@ -1677,6 +1685,19 @@ class Sim:
     def draw(self):
         # coffeeshop
         self.surface.blit(self.floorPlan, [0,0])
+        # hud
+        self.surface.blit(self.hud, [0,0])
+        BLUE = (18,83,175)
+        pygame.draw.rect(self.surface,BLUE,(37*self.SCALE,2*self.SCALE,int(120.0*(float(self.time)/3600.0))*self.SCALE,12*self.SCALE))
+        self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
+        # hud text
+        font = pygame.font.SysFont(None,40)
+        text = font.render("6:00 am",True,(0,0,0))
+        self.surface.blit(text,[5*self.SCALE,4*self.SCALE])
+        text = font.render("Profits",True,(0,0,0))
+        self.surface.blit(text,[176*self.SCALE,4*self.SCALE])
+        text = font.render("Points",True,(0,0,0))
+        self.surface.blit(text,[256*self.SCALE,4*self.SCALE])
         # permanent objects
         self.surface.blit(self.cof_bn,  [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
         self.surface.blit(self.tea_lvs, [2*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
