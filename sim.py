@@ -14,6 +14,7 @@ class Sim:
         self.mouseXY = [0,0]
         self.lftClkSt = 0
         self.points = 0
+        self.pointMax = 100.0
         self.time = 3600
         self.maxTime = 3600
         self.employees = []
@@ -291,10 +292,12 @@ class Sim:
                             if(e.job==0 and e.task==0 and e.loc[0]==5 and e.loc[1]==4):
                                 unit.task += 1
                                 unit.dir = 3
+                                self.points += int((float(unit.patience)/600.0)*self.pointMax)
                                 break
                     if(unit.patience<=0 and unit.task!=4):
                         unit.task = 9 # exiting
                         unit.dir = 1 # face north
+                        self.points -= int(self.pointMax)
                 case 4: # walking to the pick-up line
                     if(unit.offset[0]<0):                                           # centering onto current tile
                         unit.offset[0] += 2
@@ -361,6 +364,7 @@ class Sim:
                             if(e.job==1 and e.task==5 and e.loc[0]==5 and e.loc[1]==8):
                                 unit.task += 1
                                 unit.dir = 3
+                                self.points += int(self.pointMax/4)
                 case 7: # finding a seat
                     if(unit.offset[0]<0):                                                   # centering onto current tile
                         unit.offset[0] += 2
@@ -945,7 +949,7 @@ class Sim:
         self.draw()
         self.time -= 1
         if(self.time<0):
-            self.time = 3600
+            self.time = self.maxTime
     def newSim(self):
         pass
     def continueSim(self):
@@ -1692,11 +1696,14 @@ class Sim:
         self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
         # hud text
         font = pygame.font.SysFont(None,40)
-        text = font.render("6:00 am",True,(0,0,0))
+        timeText = "6:00 am"
+        profitText = "$420.69"
+        pointText = str(self.points)
+        text = font.render(timeText,True,(0,0,0))
         self.surface.blit(text,[5*self.SCALE,4*self.SCALE])
-        text = font.render("Profits",True,(0,0,0))
+        text = font.render(profitText,True,(0,0,0))
         self.surface.blit(text,[176*self.SCALE,4*self.SCALE])
-        text = font.render("Points",True,(0,0,0))
+        text = font.render(pointText,True,(0,0,0))
         self.surface.blit(text,[256*self.SCALE,4*self.SCALE])
         # permanent objects
         self.surface.blit(self.cof_bn,  [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
