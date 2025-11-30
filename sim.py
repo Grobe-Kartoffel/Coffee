@@ -8,32 +8,33 @@ import random, pygame
 class Sim:
     # movement speed will be 1 pixel per frame, or just under 1 unit of space per second
     def __init__(self,surface,SCALE):
-        self.surface = surface
-        self.SCALE = SCALE
+        self.surface = surface      # Surface to draw on.
+        self.SCALE = SCALE          # Graphics scale factor.
         
-        self.mouseXY = [0,0]
+        self.mouseXY = [0,0]        # Mouse position.
         self.lftClkSt = 0
         self.points = 0
         self.pointMax = 100.0
-        self.time = 3600
-        self.maxTime = 3600
-        self.employees = []
-        self.customers = []
+        self.time = 3600            # Number of frames remaining in the current day.
+        self.maxTime = 3600         # Length of sim days in frames.
+        self.employees = []         # Employee instances.
+        self.customers = []         # Customer instances.
         self.objects = []
         self.shelfSpace = [0,0,0,0,0]
         self.prod_order = []
-        self.demoStarted = False
+        self.demoStarted = False    # (Used to determine the first simulation frame.)
         # class references
         self.acDataRef = None
-        # image assets
-        # floorplan
+        
+        # Load Image Assets as Surfaces ------------------------------------
+        # Floorplan:
         self.floorPlan = pygame.image.load("assets/floorplan.png").convert_alpha()
         self.floorPlan = pygame.transform.scale_by(self.floorPlan,SCALE)
         self.hud = pygame.image.load("assets/hud.png").convert_alpha()
         self.hud = pygame.transform.scale_by(self.hud,SCALE)
         self.tmr_cap = pygame.image.load("assets/tmr_cap.png").convert_alpha()
         self.tmr_cap = pygame.transform.scale_by(self.tmr_cap,SCALE)
-        # customers
+        # Customers:
         self.cust11 = pygame.image.load("assets/cust_1_1.png").convert_alpha()
         self.cust11 = pygame.transform.scale_by(self.cust11,SCALE)
         self.cust12 = pygame.image.load("assets/cust_1_2.png").convert_alpha()
@@ -66,7 +67,7 @@ class Sim:
         self.cust43 = pygame.transform.scale_by(self.cust43,SCALE)
         self.cust44 = pygame.image.load("assets/cust_4_4.png").convert_alpha()
         self.cust44 = pygame.transform.scale_by(self.cust44,SCALE)
-        # employees
+        # Employees:
         self.emp11 = pygame.image.load("assets/emp_1_1.png").convert_alpha()
         self.emp11 = pygame.transform.scale_by(self.emp11,SCALE)
         self.emp12 = pygame.image.load("assets/emp_1_2.png").convert_alpha()
@@ -99,7 +100,7 @@ class Sim:
         self.emp43 = pygame.transform.scale_by(self.emp43,SCALE)
         self.emp44 = pygame.image.load("assets/emp_4_4.png").convert_alpha()
         self.emp44 = pygame.transform.scale_by(self.emp44,SCALE)
-        # objects
+        # Objects:
         self.bttl = pygame.image.load("assets/bttl.png").convert_alpha()
         self.bttl = pygame.transform.scale_by(self.bttl,SCALE)
         self.chk_pwd = pygame.image.load("assets/chk_pwd.png").convert_alpha()
@@ -132,12 +133,12 @@ class Sim:
         self.syrp = pygame.transform.scale_by(self.syrp,SCALE)
         self.tea_lvs = pygame.image.load("assets/tea_lvs.png").convert_alpha()
         self.tea_lvs = pygame.transform.scale_by(self.tea_lvs,SCALE)
-        # other
+        # Other Images:
         self.bbl = pygame.image.load("assets/bbl.png").convert_alpha()
         self.bbl = pygame.transform.scale_by(self.bbl,SCALE)
     class Emp:
-        # static vars belonging to class, not one individual instance
-        # lists containing the orders that require each of the supply types so that emp1 knows where to get the proper supply item
+        # Static vars belonging to class, not one individual instance:
+        # Lists containing the orders that require each of the supply types so that emp1 knows where to get the proper supply item:
         sup_cof  = [1,2,3,4,5,6,7,8,9,10,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,87]    # coffee beans
         sup_tea  = [11,12,13,14,15,16,17,18,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]                # tea leaves
         sup_coco = [19,20,21,58,59,60,61,62,63]                                                             # cocoa powders
@@ -152,6 +153,7 @@ class Sim:
         prod_rg  = [23,26,29,32,35,39,40,42,44,46,48,50,52,54,56,58,60,62]
         prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]
         def __init__(self,ID,loc,job,task):
+            # Instance vars:
             self.ID = ID
             self.loc = [loc[0],loc[1]]
             self.offset = [0,0]
@@ -169,7 +171,7 @@ class Sim:
             self.dir = 0
             self.order = order
             self.task = task
-            self.patience = 620 # 15.33 seconds (0.33 to animate order)
+            self.patience = 620 # Max customer waiting time in ticks - 620 = 10.33 seconds at 60FPS (0.33 for 20-tick order animation).
     class Obj:
         def __init__(self,ID,loc):
             self.ID = ID
@@ -210,7 +212,7 @@ class Sim:
             img = self.cof_mkr1
         return img
     def demoSim(self):
-        if(not self.demoStarted):
+        if(not self.demoStarted): # Runs on the first simulation frame instead of the normal logic:
             self.demoStarted = True
             self.customers.append(self.Cust(random.randint(0,3),[-1,1],self.acDataRef.getRndProd(random.randint(0,14)),1)) # spawn a customer off screen, wanting a reg Dark Hot Chocolate, with the task of walking into the shop to order
             self.employees.append(self.Emp(random.randint(0,3),[5,4],0,0)) # spawn an employee to take orders, with the task of waiting for a customer to order
@@ -948,11 +950,11 @@ class Sim:
             i += 1
         self.draw()
         self.time -= 1
-        if(self.time<0):
-            self.time = self.maxTime
-    def newSim(self):
+        if(self.time<0): # When the day ends...
+            self.time = self.maxTime # Currently, restart the timer for testing purposes.
+    def newSim(self): # TODO: Function summary.
         pass
-    def continueSim(self):
+    def continueSim(self): # TODO: Function summary.
         pass
     def runSim(self):
         if(not self.demoStarted):
@@ -1675,7 +1677,7 @@ class Sim:
                 continue
             i += 1
         self.draw()        
-    def storeInputs(self,MouseXY,lftClk):
+    def storeInputs(self,MouseXY,lftClk): # TODO: Function summary.
         self.mouseXY = [int(MouseXY[0]/(16*self.SCALE)),int(MouseXY[1]/(16*self.SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
             self.lftClkSt = 1
@@ -1686,15 +1688,21 @@ class Sim:
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
             return
-    def draw(self):
-        # coffeeshop
-        self.surface.blit(self.floorPlan, [0,0])
-        # hud
-        self.surface.blit(self.hud, [0,0])
+    def draw(self): # Draws the simulation to the screen.
+        # Color Constants
         BLUE = (18,83,175)
+        
+        # Draw coffee shop building:
+        self.surface.blit(self.floorPlan, [0,0])
+        
+        # Draw HUD:
+        self.surface.blit(self.hud, [0,0])
+        
+        # Draw time-remaining bar:
         pygame.draw.rect(self.surface,BLUE,(37*self.SCALE,2*self.SCALE,int(120.0*(float(self.time)/3600.0))*self.SCALE,12*self.SCALE))
         self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
-        # hud text
+        
+        # Draw HUD text:
         font = pygame.font.SysFont(None,40)
         timeText = "6:00 am"
         profitText = "$420.69"
@@ -1705,7 +1713,8 @@ class Sim:
         self.surface.blit(text,[176*self.SCALE,4*self.SCALE])
         text = font.render(pointText,True,(0,0,0))
         self.surface.blit(text,[256*self.SCALE,4*self.SCALE])
-        # permanent objects
+        
+        # Draw permanent objects:
         self.surface.blit(self.cof_bn,  [1*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
         self.surface.blit(self.tea_lvs, [2*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
         self.surface.blit(self.chk_pwd, [3*16*self.SCALE +3*self.SCALE,  2*16*self.SCALE +1*self.SCALE])
@@ -1720,22 +1729,26 @@ class Sim:
         self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  4*16*self.SCALE +3*self.SCALE])
         self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  5*16*self.SCALE +3*self.SCALE])
         self.surface.blit(self.cof_mkr1,[0*16*self.SCALE +3*self.SCALE,  6*16*self.SCALE +3*self.SCALE])
-        #customers
+        
+        # Draw customers:
         custs = [[self.cust11,self.cust12,self.cust13,self.cust14],[self.cust21,self.cust22,self.cust23,self.cust24],[self.cust31,self.cust32,self.cust33,self.cust34],[self.cust41,self.cust42,self.cust43,self.cust44]]
         i = len(self.customers)-1 # draw customers newest to oldest so that oldest customers show up on top
         while(i>-1):
             unit = self.customers[i]
             self.surface.blit(custs[unit.ID][unit.dir],[unit.loc[0]*16*self.SCALE+unit.offset[0],unit.loc[1]*16*self.SCALE+unit.offset[1]])
             i -= 1
-        # employees
+        
+        # Draw employees:
         emps = [[self.emp11,self.emp12,self.emp13,self.emp14],[self.emp21,self.emp22,self.emp23,self.emp24],[self.emp31,self.emp32,self.emp33,self.emp34],[self.emp41,self.emp42,self.emp43,self.emp44]]
         for unit in self.employees:
             self.surface.blit(emps[unit.ID][unit.dir],[unit.loc[0]*16*self.SCALE+unit.offset[0],unit.loc[1]*16*self.SCALE+unit.offset[1]])
-        # objects
+        
+        # Draw objects:
         for o in self.objects:
             img = self.getObjImg(o.ID,o.loc[0])
             self.surface.blit(img,[o.loc[0]*16*self.SCALE +3*self.SCALE, o.loc[1]*16*self.SCALE +3*self.SCALE])
-        # order bubbles
+        
+        # Draw order bubbles:
         for unit in self.customers:
             if(unit.task==2 or unit.task==3): # draw order bubble
                 # bubble

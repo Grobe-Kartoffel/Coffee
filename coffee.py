@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod                     # not sure why abstract 
 import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm
 
 def main():
-    # pygame initializers
+    # Pygame Initialization
     pygame.init()                                           # initialize game engine
     
     SCALE = 4                                               # set scale factor for graphics
@@ -20,10 +20,20 @@ def main():
     
     clock = pygame.time.Clock()                             # Manage timing for screen updates    
     
-    # color constants
-    BLACK = (0,0,0)
+    # General Constants
+    FPS = 60                   # FPS for animations (lower number to slow down).
     
-    # local  variables
+    # Logo Animation Constants
+    LOGO_FRAME_FADEIN = 60     # Frame where logo finishes fading in.
+    LOGO_FRAME_FADEOUT = 120   # Frame where logo starts to fade out (jumps here if intro skipped).
+    LOGO_FRAME_TOTAL = 180     # Frame length of logo animation.
+    
+    # Color Constants
+    BLACK = (0,  0,    0)
+    WHITE = (255,255,255)
+    GREEN = (0,  230,  0)
+    
+    # Local Variables
     data = ac.Accuracy_Data()              # create class objects
     progressBar = pm.Progress_Manager()
     settings = st.Settings()
@@ -33,78 +43,83 @@ def main():
     mouseXY = [0,0]
     mouseDown = False
     
-    dataState = 0 # indicate data has not started processing yet
+    dataState = 0 # Indicates the state of the data processing. (0 = processing not started, 1 = processing sales data, 2 = processing supply data, 3 = processing done)
     
     salesDataThread = threading.Thread(target=data.readSalesData, args=(settings,progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
     
     # image files
     logo = pygame.image.load("assets/logo.png").convert_alpha(surface)
-    logoFrame = 0.0
+    
+    logoFrame = 0.0 # Elapsed frames since game start.
     
     while (True):
         mouseXY = pygame.mouse.get_pos()
         mouseDown = pygame.mouse.get_pressed()[0]
-        for event in pygame.event.get():                #captures state of the game - loops thru changes
+
+        # Captures state of the game - loops thru changes:
+        for event in pygame.event.get():
             
-            if ( event.type == pygame.QUIT or (event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE)): #end game
+            # Quits game on X window button or ESC key press:
+            if (event.type == pygame.QUIT or (event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE)):
                 pygame.quit()
                 sys.exit()
         
-            # button, mouse, or keyboard interaction here
-            if(logoFrame<120 and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
-                logoFrame = 120
+            # Button, mouse, or keyboard interaction here:
+            if(logoFrame<LOGO_FRAME_FADEOUT and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # Skip intro logo.
+                logoFrame = LOGO_FRAME_FADEOUT
         
-        # ongoing game logic here  (repeats every 1/60 second)
+        # Ongoing game logic here (repeats every 1/FPS second):
         
-        # thread logic for processing data
-        if(progressBar.Value==0.0 and dataState==0):
+        # Thread logic for processing data:
+        if(progressBar.Value==0.0 and dataState==0): # If no data processed, start with sales data.
             dataState = 1 # indicate sales data is processing
             salesDataThread.start()
-        if(progressBar.Value<0 and dataState==1):
+        if(progressBar.Value<0 and dataState==1): # Unable to find sales data.
             salesDataThread.join()
             print("ERROR: Sales Data could not be found. Aborting program.")
             return            
-        if(progressBar.Value>=1.0 and dataState==1):
+        if(progressBar.Value>=1.0 and dataState==1): # Finished sales data, begin supply data processing.
             salesDataThread.join()
-            #return                  # remove this once supplyData is written
+            #return       # remove this once supplyData is written
             dataState = 2 # indicate supply data is processing
             supplyDataThread.start()
-        if(progressBar.Value<0 and dataState==2):
+        if(progressBar.Value<0 and dataState==2): # Unable to find supply data.
             supplyDataThread.join()
             print("ERROR: Supply Data could not be found. Aborting program.")
             return            
-        if(progressBar.Value>=1.0 and dataState==2):
+        if(progressBar.Value>=1.0 and dataState==2): # Sales and supply data processed successfully.
             supplyDataThread.join()
             dataState = 3 # indicate data is done processing
-        if(dataState==3):
-            #print(settings)
-            #print(data)
+        '''if(dataState==3): # Used for debug.
+            print(settings)
+            print(data)
             dataState += 1
-            # return
-        # intro logo logic
-        if(dataState>0 and logoFrame<=180):
+            return'''
+        
+        # Intro logo logic:
+        if(dataState>0 and logoFrame<=LOGO_FRAME_TOTAL):
             logoFrame += 1
-        #set background color
+        
+        # Set background color:
         surface.fill(BLACK)
         
-        # drawing code goes here
-        if(logoFrame<=60):
-            logo.set_alpha(int(255.0*logoFrame/60.0))
-        if(logoFrame>60 and logoFrame<=120):
+        # Drawing code goes here:
+        if(logoFrame<=LOGO_FRAME_FADEIN): # Logo is fading in...
+            logo.set_alpha(int(255.0*logoFrame/LOGO_FRAME_FADEIN))
+        if(logoFrame>LOGO_FRAME_FADEIN and logoFrame<=LOGO_FRAME_FADEOUT): # Logo is displaying at full transparency...
             logo.set_alpha(255)
-        if(logoFrame>120 and logoFrame<=180):
-            logo.set_alpha(255 - int(255.0*(logoFrame-120)/60.0) )
-        if(logoFrame<=180):
+        if(logoFrame>LOGO_FRAME_FADEOUT and logoFrame<=LOGO_FRAME_TOTAL): # Logo is fading out...
+            logo.set_alpha(255 - int(255.0*(logoFrame-LOGO_FRAME_FADEOUT)/(LOGO_FRAME_TOTAL - LOGO_FRAME_FADEOUT)))
+        if(logoFrame<=LOGO_FRAME_TOTAL): # Logo is being displayed...
             surface.blit(logo, [(W-640)/2,(H-640)/2])
         else:
             sim.storeInputs(mouseXY,mouseDown)
             sim.demoSim()
             #progressBar.displayProgress(surface, W/16, H*6/13, W*7/8, H/13, 5, WHITE, GREEN)
         
-        
-        pygame.display.update()                          #updates the screen
-        clock.tick(60)                                  # FPS for animation (lower number to slow)
+        pygame.display.update()                         # Updates the screen
+        clock.tick(FPS)                                  # Waits for the remaining time of the current frame
         
 #----------------------------------------------------------------
 main()                                                   #runs the game
