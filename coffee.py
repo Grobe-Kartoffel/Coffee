@@ -1,19 +1,21 @@
+# External imports.
 import math, random, pygame, sys, threading
-from abc import ABC, abstractmethod                     # not sure why abstract classes need to be imported like this, but they do
-# import class files
-# IDE might complain that the file cannot be found, but it will still work
+from enum import IntEnum
+from abc import ABC, abstractmethod # Not sure why abstract classes need to be imported like this, but they do.
+
+# Import class files. IDE might complain that the file cannot be found, but it will still work.
 import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm
 
-
-gameIntro = 0
-gameMainMenu = 1
-gameSettings = 2
-gameSim = 3
-gameEndDay = 4
-gameMenu = 5
-gameSupplyMenu = 6
-gameProductMenu = 7
-
+# Game States
+class GameState(IntEnum):
+    gameIntro = 0       # .
+    gameMainMenu = 1    # .
+    gameSettings = 2    # .
+    gameSim = 3         # .
+    gameEndDay = 4      # .
+    gameMenu = 5        # .
+    gameSupplyMenu = 6  # .
+    gameProductMenu = 7 # .
 
 def main():
     # Pygame Initialization
@@ -31,7 +33,6 @@ def main():
     
     clock = pygame.time.Clock()                             # Manage timing for screen updates    
 
-
      # General Constants
     FPS = 60                   # FPS for animations (lower number to slow down).
     
@@ -45,7 +46,6 @@ def main():
     WHITE = (255,255,255)
     GREEN = (0,  230,  0)
     
-
     # Local  Variables
     data = ac.Accuracy_Data()              # create class objects
     progressBar = pm.Progress_Manager()
@@ -58,8 +58,7 @@ def main():
     
     dataState = 0 # Indicates the state of the data processing. (0 = processing not started, 1 = processing sales data, 2 = processing supply data, 3 = processing done)
 
-    gameState = gameIntro
-
+    gameState = GameState.gameIntro
     
     salesDataThread = threading.Thread(target=data.readSalesData, args=(settings,progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
@@ -69,7 +68,6 @@ def main():
 
     logoFrame = 0.0 # Elapsed frames since game start.
 
-    
     mainMenuBg = pygame.image.load("assets/Main Menu.png").convert_alpha()
     settingsMenuBg = pygame.image.load("assets/Settings.png").convert_alpha()
     endDayBg = pygame.image.load("assets/EndofDay Menu.png").convert_alpha()
@@ -98,9 +96,6 @@ def main():
     productStartBtn = pygame.Rect(1023,0,256,64)
     productsTabBtn = pygame.Rect(0,16,251,47)
 
-
-
-
     while (True):
         mouseXY = pygame.mouse.get_pos()
         mouseDown = pygame.mouse.get_pressed()[0]
@@ -113,80 +108,84 @@ def main():
                 pygame.quit()
                 sys.exit()
         
-            # Button, mouse, or keyboard interaction here:
-            if gameState == gameIntro:
-                if(logoFrame < LOGO_FRAME_FADEOUT and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
-                    logoFrame = LOGO_FRAME_FADEOUT
-        
-        #Oongoing game logic here  (repeats every 1/FPS second):
-        
-            elif gameState == gameMainMenu:
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if playBtn.collidepoint(mouseXY):
-                        gameState = gameMenu
-                    elif settingsBtn.collidepoint(mouseXY):
-                        gameState = gameSettings
-                    elif quitBtn.collidepoint(mouseXY):
-                        pygame.quit()
-                        sys.exit()
-
-            elif gameState == gameMenu:
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if newGameBtn.collidepoint(mouseXY):
-                        sim.newSim()
-                        gameState = gameProductMenu
-                    elif continueBtn.collidepoint(mouseXY):
-                        sim.continueSim()
-                        gameState = gameProductMenu
-                    elif gameBackBtn.collidepoint(mouseXY):
-                        gameState = gameMainMenu
-
-            elif gameState == gameSupplyMenu:
-
-                settings.mouseXY = mouseXY
-                settings.mouseDown = mouseDown
-
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if supplyStartBtn.collidepoint(mouseXY):
-                         sim.newSim()
-                         gameState = gameSim
-                    elif suppliesTabBtn.collidepoint(mouseXY):
-                         gameState = gameProductMenu
-
-            elif gameState == gameProductMenu:
-
-                settings.mouseXY = mouseXY
-                settings.mouseDown = mouseDown
-
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if productStartBtn.collidepoint(mouseXY):
-                         sim.newSim()
-                         gameState = gameSim
-                    elif productsTabBtn.collidepoint(mouseXY):
-                         gameState = gameSupplyMenu
-                    
-    
+            # Ongoing game logic here (repeats every 1/FPS second):
+            # Button, mouse, or keyboard input logic here, selected by gameState:
+            match gameState:
+                # Intro
+                case GameState.gameIntro:
+                    if(logoFrame < LOGO_FRAME_FADEOUT and (event.type==pygame.MOUSEBUTTONDOWN or event.type==pygame.KEYDOWN)): # skip intro logo
+                        logoFrame = LOGO_FRAME_FADEOUT
+                # Main Menu
+                case GameState.gameMainMenu:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if playBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameMenu
+                        elif settingsBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameSettings
+                        elif quitBtn.collidepoint(mouseXY):
+                            pygame.quit()
+                            sys.exit()
+                # -TODO-
+                case GameState.gameMenu:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if newGameBtn.collidepoint(mouseXY):
+                            sim.newSim()
+                            gameState = GameState.gameProductMenu
+                        elif continueBtn.collidepoint(mouseXY):
+                            sim.continueSim()
+                            gameState = GameState.gameProductMenu
+                        elif gameBackBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameMainMenu
                 
-            elif gameState == gameSettings:
+                # Supplies Menu
+                case GameState.gameSupplyMenu:
+                    settings.mouseXY = mouseXY
+                    settings.mouseDown = mouseDown
 
-                settings.mouseXY = mouseXY
-                settings.mouseDown = mouseDown
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if supplyStartBtn.collidepoint(mouseXY):
+                             sim.newSim()
+                             gameState = GameState.gameSim
+                        elif suppliesTabBtn.collidepoint(mouseXY):
+                             gameState = GameState.gameProductMenu
+                
+                # Products Menu
+                case GameState.gameProductMenu:
+                    settings.mouseXY = mouseXY
+                    settings.mouseDown = mouseDown
 
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if resetBtn.collidepoint(mouseXY):
-                        if hasattr(settings, "resetToDefault"):
-                            settings.resetToDefault()
-                        gameState = gameSettings
-                    elif settingsBackBtn.collidepoint(mouseXY):
-                        gameState = gameMainMenu
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if productStartBtn.collidepoint(mouseXY):
+                             sim.newSim()
+                             gameState = GameState.gameSim
+                        elif productsTabBtn.collidepoint(mouseXY):
+                             gameState = GameState.gameSupplyMenu
+                
+                # Settings Menu
+                case GameState.gameSettings:
+                    settings.mouseXY = mouseXY
+                    settings.mouseDown = mouseDown
 
-            elif gameState == gameEndDay:
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if nextDayBtn.collidepoint(mouseXY):
-                        gameState = gameProductMenu
-                    elif endDayQuitBtn.collidepoint(mouseXY):
-                        gameState = gameMainMenu
-
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if resetBtn.collidepoint(mouseXY):
+                            if hasattr(settings, "resetToDefault"):
+                                settings.resetToDefault()
+                            gameState = GameState.gameSettings
+                        elif settingsBackBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameMainMenu
+                
+                # End-of-Day Menu
+                case GameState.gameEndDay:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if nextDayBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameProductMenu
+                        elif endDayQuitBtn.collidepoint(mouseXY):
+                            gameState = GameState.gameMainMenu
+            # End input logic ------------------
+            
+        # End event loop ------------------
+        
+        
         # Thread logic for processing data
         if(progressBar.Value==0.0 and dataState==0): # If no data processed, start with sales data.
             dataState = 1 # indicate sales data is processing
@@ -217,68 +216,75 @@ def main():
             logoFrame += 1
         #Set background color
         surface.fill(BLACK)
+        # End data processing logic ------------------
         
-        # Drawing code goes here:
-        if gameState == gameIntro:
-            if(logoFrame<=LOGO_FRAME_FADEIN):  # Logo is fading in...
-                logo.set_alpha(int(255.0*logoFrame/LOGO_FRAME_FADEIN))
-            if(logoFrame>LOGO_FRAME_FADEIN  and logoFrame<=LOGO_FRAME_FADEOUT): # Logo is displaying at full transparency...
-                logo.set_alpha(255)
-            if(logoFrame>LOGO_FRAME_FADEOUT  and logoFrame<=LOGO_FRAME_TOTAL): # Logo is fading out...
-                logo.set_alpha(255 - int(255.0*(logoFrame-LOGO_FRAME_FADEOUT)/(LOGO_FRAME_TOTAL - LOGO_FRAME_FADEOUT)))
+        
+        # Drawing code goes here, selected by gameState:
+        match gameState:
+            # Intro
+            case GameState.gameIntro:
+                if(logoFrame<=LOGO_FRAME_FADEIN):  # Logo is fading in...
+                    logo.set_alpha(int(255.0*logoFrame/LOGO_FRAME_FADEIN))
+                if(logoFrame>LOGO_FRAME_FADEIN  and logoFrame<=LOGO_FRAME_FADEOUT): # Logo is displaying at full transparency...
+                    logo.set_alpha(255)
+                if(logoFrame>LOGO_FRAME_FADEOUT  and logoFrame<=LOGO_FRAME_TOTAL): # Logo is fading out...
+                    logo.set_alpha(255 - int(255.0*(logoFrame-LOGO_FRAME_FADEOUT)/(LOGO_FRAME_TOTAL - LOGO_FRAME_FADEOUT)))
 
 
-            if(logoFrame<=LOGO_FRAME_TOTAL): # Logo is being displayed...
-                surface.blit(logo, [(W-640)/2,(H-640)/2])
+                if(logoFrame<=LOGO_FRAME_TOTAL): # Logo is being displayed...
+                    surface.blit(logo, [(W-640)/2,(H-640)/2])
 
-            if dataState > 0 and dataState < 4:
-                progressBar.displayProgress(surface, W*0.15, H*0.90, W*0.70, H*0.06, 5, WHITE, GREEN)
+                if dataState > 0 and dataState < 4:
+                    progressBar.displayProgress(surface, W*0.15, H*0.90, W*0.70, H*0.06, 5, WHITE, GREEN)
 
-            if logoFrame > 180 and dataState >= 4:
-                gameState = gameMainMenu
-
-        elif gameState == gameMainMenu:
-            surface.blit(mainMenuBg, (0,0))
-
-        elif gameState == gameMenu:
-            surface.blit(gameMenuBg, (0,0))
-
-        elif gameState == gameSupplyMenu:
-            surface.blit(supplyMenubg, (0,0))
-
-            if hasattr(settings, "displaySupplyMenu"):
-                settings.displaySupplyMenu(surface)
-            # if hasattr(simData, "drawSupplyGraph"):
-            #     simData.drawSupplyGraph(-1, surface)
-
-        elif gameState == gameProductMenu:
-            surface.blit(productMenubg, (0,0))
-
-            if hasattr(settings, "displayProductMenu"):
-                settings.displayProductMenu(surface)
-            # if hasattr(simData, "drawProductGraph"):
-            #     simData.drawProductGraph(-1, surface)
-
-        elif gameState == gameSettings:
-            surface.blit(settingsMenuBg, (0,0))
-
-            if hasattr(settings, "display"):
-                settings.display(surface)
-
-        elif gameState == gameEndDay:
-            surface.blit(endDayBg, (0,0))
-
-        elif gameState == gameSim:
-            sim.storeInputs(mouseXY, mouseDown)
-            sim.demoSim()
+                if logoFrame > 180 and dataState >= 4:
+                    gameState = GameState.gameMainMenu
             
+            # Main Menu
+            case GameState.gameMainMenu:
+                surface.blit(mainMenuBg, (0,0))
+            
+            # -TODO-
+            case GameState.gameMenu:
+                surface.blit(gameMenuBg, (0,0))
+            
+            # Supplies Menu
+            case GameState.gameSupplyMenu:
+                surface.blit(supplyMenubg, (0,0))
+
+                if hasattr(settings, "displaySupplyMenu"):
+                    settings.displaySupplyMenu(surface)
+                # if hasattr(simData, "drawSupplyGraph"):
+                #     simData.drawSupplyGraph(-1, surface)
+            
+            # Products Menu
+            case GameState.gameProductMenu:
+                surface.blit(productMenubg, (0,0))
+
+                if hasattr(settings, "displayProductMenu"):
+                    settings.displayProductMenu(surface)
+                # if hasattr(simData, "drawProductGraph"):
+                #     simData.drawProductGraph(-1, surface)
+            
+            # Settings Menu
+            case GameState.gameSettings:
+                surface.blit(settingsMenuBg, (0,0))
+
+                if hasattr(settings, "display"):
+                    settings.display(surface)
+            # End-of-Day Menu
+            case GameState.gameEndDay:
+                surface.blit(endDayBg, (0,0))
+            
+            # Sim
+            case GameState.gameSim:
+                sim.storeInputs(mouseXY, mouseDown)
+                sim.demoSim()
                 
+                if sim.time <= 0:
+                    gameState = GameState.gameEndDay
+        # End drawing code ------------------
 
-            if sim.time <= 0:
-                gameState = gameEndDay
-
-        
-        
         
         pygame.display.update()                        # Updates the screen
         clock.tick(FPS)                                  # Waits for the remaining time of the current frame
