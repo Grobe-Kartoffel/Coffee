@@ -251,7 +251,7 @@ class SettingsMenu:
         screen = pygame.display.get_surface()
         sw, sh = screen.get_size()
         center_x = sw // 2
-        top_y = sh // 4
+        top_y = sh // 3
 
         slider_w = min(600, sw - 120)
         slider_h = 36
