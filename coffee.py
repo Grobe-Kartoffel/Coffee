@@ -144,7 +144,6 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
-                            #sim.newSim()
                             gameState = GameState.gameSim
                         elif suppliesTabBtn.collidepoint(mouseXY):
                             gameState = GameState.gameProductMenu
@@ -156,7 +155,6 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
-                            #sim.newSim()
                             gameState = GameState.gameSim
                         elif productsTabBtn.collidepoint(mouseXY):
                             gameState = GameState.gameSupplyMenu
@@ -178,8 +176,10 @@ def main():
                 case GameState.gameEndDay:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if nextDayBtn.collidepoint(mouseXY):
+                            sim.continueSim() # prepare sim for another day
                             gameState = GameState.gameProductMenu
                         elif endDayQuitBtn.collidepoint(mouseXY):
+                            sim.continueSim()
                             gameState = GameState.gameMainMenu
             # End input logic ------------------
             
@@ -214,12 +214,11 @@ def main():
         # Intro logo logic
         if(dataState>0 and logoFrame<=LOGO_FRAME_TOTAL):
             logoFrame += 1
-        #Set background color
-        surface.fill(BLACK)
         # End data processing logic ------------------
         
-        
         # Drawing code goes here, selected by gameState:
+        #Set background color
+        surface.fill(BLACK)
         match gameState:
             # Intro
             case GameState.gameIntro:
@@ -229,23 +228,22 @@ def main():
                     logo.set_alpha(255)
                 if(logoFrame>LOGO_FRAME_FADEOUT  and logoFrame<=LOGO_FRAME_TOTAL): # Logo is fading out...
                     logo.set_alpha(255 - int(255.0*(logoFrame-LOGO_FRAME_FADEOUT)/(LOGO_FRAME_TOTAL - LOGO_FRAME_FADEOUT)))
-
-
                 if(logoFrame<=LOGO_FRAME_TOTAL): # Logo is being displayed...
-                    surface.blit(logo, [(W-640)/2,(H-640)/2])
-
+                    surface.blit(logo, [(W-640)/2,0])
                 if dataState > 0 and dataState < 4:
                     progressBar.displayProgress(surface, W*0.15, H*0.90, W*0.70, H*0.06, 5, WHITE, GREEN)
-
                 if logoFrame > 180 and dataState >= 4:
+                    sim.continueSim() # reset sim so demo displays properly
                     gameState = GameState.gameMainMenu
             
             # Main Menu
             case GameState.gameMainMenu:
+                sim.demoSim()
                 surface.blit(mainMenuBg, (0,0))
             
             # -TODO-
             case GameState.gameMenu:
+                sim.demoSim()
                 surface.blit(gameMenuBg, (0,0))
             
             # Supplies Menu
@@ -268,20 +266,23 @@ def main():
             
             # Settings Menu
             case GameState.gameSettings:
+                sim.demoSim()
                 surface.blit(settingsMenuBg, (0,0))
 
                 if hasattr(settings, "display"):
                     settings.display(surface)
             # End-of-Day Menu
             case GameState.gameEndDay:
+                sim.runSim()
                 surface.blit(endDayBg, (0,0))
             
             # Sim
             case GameState.gameSim:
                 sim.storeInputs(mouseXY, mouseDown)
-                sim.demoSim()
+                sim.runSim()
                 
                 if sim.time <= 0:
+                    sim.storeInputs([0,0],False) # make sure if player clicks the moment the sim ends, the input is not continuously doing something
                     gameState = GameState.gameEndDay
         # End drawing code ------------------
 
