@@ -1,4 +1,5 @@
-import threading
+import threading, pygame
+from typing import Callable, Tuple, Dict
 
 class Settings:
     def __init__(self):
@@ -55,8 +56,6 @@ class Settings:
         return
 
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
-import pygame
-from typing import Callable, Tuple, Dict
 
 def clamp(v, a, b):
     return max(a, min(b, v))
