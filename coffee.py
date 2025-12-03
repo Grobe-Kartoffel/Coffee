@@ -6,6 +6,17 @@ from abc import ABC, abstractmethod # Not sure why abstract classes need to be i
 # Import class files. IDE might complain that the file cannot be found, but it will still work.
 import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm
 
+# "Button Animation" gives buttons border and a highlight
+def draw_button_outline(surface, rect, thickness= 4):
+    pygame.draw.rect(surface, (255, 255, 255), rect, thickness)
+
+def draw_button_glow(surface, rect, alpha=35):
+    glow_surf = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
+    pygame.draw.rect(glow_surf, (255, 255, 255, alpha), (0, 0, rect.w, rect.h))
+    surface.blit(glow_surf, rect.topleft)
+
+
+
 # Game States
 class GameState(IntEnum):
     gameIntro = 0       # .
@@ -96,6 +107,16 @@ def main():
     productStartBtn = pygame.Rect(1023,0,256,64)
     productsTabBtn = pygame.Rect(0,16,251,47)
 
+    def goBackToMain():
+        nonlocal gameState
+        gameState = GameState.gameMainMenu
+
+    settingsMenu = st.SettingsMenu(
+        on_back = goBackToMain,
+        on_reset = None,
+        initial_values = None
+    )
+
     while (True):
         mouseXY = pygame.mouse.get_pos()
         mouseDown = pygame.mouse.get_pressed()[0]
@@ -160,17 +181,8 @@ def main():
                             gameState = GameState.gameSupplyMenu
                 
                 # Settings Menu
-                case GameState.gameSettings:
-                    settings.mouseXY = mouseXY
-                    settings.mouseDown = mouseDown
-
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        if resetBtn.collidepoint(mouseXY):
-                            if hasattr(settings, "resetToDefault"):
-                                settings.resetToDefault()
-                            gameState = GameState.gameSettings
-                        elif settingsBackBtn.collidepoint(mouseXY):
-                            gameState = GameState.gameMainMenu
+                case gameState.gameSettings:
+                    settingsMenu.store_inputs(mouseXY, mouseDown)
                 
                 # End-of-Day Menu
                 case GameState.gameEndDay:
@@ -240,15 +252,52 @@ def main():
             case GameState.gameMainMenu:
                 sim.demoSim()
                 surface.blit(mainMenuBg, (0,0))
-            
+
+                mx, my = mouseXY
+                if playBtn.collidepoint(mx, my):
+                     draw_button_glow(surface, playBtn)
+                     draw_button_outline(surface, playBtn)
+
+                if settingsBtn.collidepoint(mx, my):
+                     draw_button_glow(surface, settingsBtn)
+                     draw_button_outline(surface, settingsBtn)
+
+                if quitBtn.collidepoint(mx, my):
+                     draw_button_glow(surface, quitBtn)
+                     draw_button_outline(surface, quitBtn)    
+               
             # -TODO-
             case GameState.gameMenu:
                 sim.demoSim()
                 surface.blit(gameMenuBg, (0,0))
             
+                mx, my = mouseXY
+                if newGameBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, newGameBtn)
+                    draw_button_outline(surface, newGameBtn)
+
+                if continueBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, continueBtn)
+                    draw_button_outline(surface, continueBtn)
+
+                if gameBackBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, gameBackBtn)
+                    draw_button_outline(surface, gameBackBtn)
+
+                
+            # Supplies and Products Tab Buttons outlines need changed to fit shape 
             # Supplies Menu
             case GameState.gameSupplyMenu:
                 surface.blit(supplyMenubg, (0,0))
+                
+                mx, my = mouseXY
+                if supplyStartBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, supplyStartBtn)
+                    draw_button_outline(surface, supplyStartBtn)
+
+                if suppliesTabBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, suppliesTabBtn)
+                    draw_button_outline(surface, suppliesTabBtn)
 
                 if hasattr(settings, "displaySupplyMenu"):
                     settings.displaySupplyMenu(surface)
@@ -259,6 +308,15 @@ def main():
             case GameState.gameProductMenu:
                 surface.blit(productMenubg, (0,0))
 
+                mx, my = mouseXY
+                if supplyStartBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, supplyStartBtn)
+                    draw_button_outline(surface, supplyStartBtn)
+
+                if productsTabBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, productsTabBtn)
+                    draw_button_outline(surface, productsTabBtn)
+
                 if hasattr(settings, "displayProductMenu"):
                     settings.displayProductMenu(surface)
                 # if hasattr(simData, "drawProductGraph"):
@@ -266,15 +324,23 @@ def main():
             
             # Settings Menu
             case GameState.gameSettings:
-                sim.demoSim()
                 surface.blit(settingsMenuBg, (0,0))
+                settingsMenu.update()
+                settingsMenu.draw(surface)
 
-                if hasattr(settings, "display"):
-                    settings.display(surface)
             # End-of-Day Menu
             case GameState.gameEndDay:
                 sim.runSim()
                 surface.blit(endDayBg, (0,0))
+
+                mx, my = mouseXY
+                if nextDayBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, nextDayBtn)
+                    draw_button_outline(surface, nextDayBtn)
+
+                if endDayQuitBtn.collidepoint(mx, my):
+                    draw_button_glow(surface, endDayQuitBtn)
+                    draw_button_outline(surface, endDayQuitBtn)
             
             # Sim
             case GameState.gameSim:
