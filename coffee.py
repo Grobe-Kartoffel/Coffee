@@ -144,10 +144,10 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
-                             sim.newSim()
-                             gameState = GameState.gameSim
+                            sim.newSim()
+                            gameState = GameState.gameSim
                         elif suppliesTabBtn.collidepoint(mouseXY):
-                             gameState = GameState.gameProductMenu
+                            gameState = GameState.gameProductMenu
                 
                 # Products Menu
                 case GameState.gameProductMenu:
@@ -156,10 +156,10 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
-                             sim.newSim()
-                             gameState = GameState.gameSim
+                            sim.newSim()
+                            gameState = GameState.gameSim
                         elif productsTabBtn.collidepoint(mouseXY):
-                             gameState = GameState.gameSupplyMenu
+                            gameState = GameState.gameSupplyMenu
                 
                 # Settings Menu
                 case GameState.gameSettings:
