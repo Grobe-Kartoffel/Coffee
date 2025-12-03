@@ -53,3 +53,329 @@ class Settings:
         with self.lock:
             self.supplies[ID][1] = desc
         return
+
+# settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
+import pygame
+from typing import Callable, Tuple, Dict
+
+def clamp(v, a, b):
+    return max(a, min(b, v))
+
+class Slider:
+    def __init__(self, rect: pygame.Rect, label: str, value: float = 0.5,
+                 min_val: float = 0.0, max_val: float = 1.0,
+                 on_change: Callable[[float], None] = None):
+        self.rect = rect  # area for full slider (line + knob)
+        self.label = label
+        self.min = min_val
+        self.max = max_val
+        self.value = clamp(value, self.min, self.max)
+        self.on_change = on_change
+
+        # knob visuals
+        self.knob_radius = int(rect.height * 0.45)
+        self.knob_color = (230, 230, 230)
+        self.knob_hover_color = (255, 255, 255)
+        self.knob_pressed_color = (200, 200, 200)
+
+        # interaction state
+        self.hover = False
+        self.dragging = False
+        self._press_candidate = False  # true if press started on this knob
+
+    def knob_center_x(self):
+        # map value to x coordinate inside rect (padding by knob_radius)
+        pad = self.knob_radius + 2
+        usable_w = max(1, self.rect.w - pad*2)
+        frac = (self.value - self.min) / (self.max - self.min) if self.max != self.min else 0
+        return self.rect.x + pad + int(frac * usable_w)
+
+    def knob_center(self):
+        return (self.knob_center_x(), self.rect.centery)
+
+    def draw(self, surface: pygame.Surface, font: pygame.font.Font):
+        # track knob pos
+        cx, cy = self.knob_center()
+        # track hover scale
+        base_r = self.knob_radius
+        if self.dragging:
+            r = int(base_r * 0.9)  # shrink while pressed
+        elif self.hover:
+            r = int(base_r * 1.15)  # expand while hover
+        else:
+            r = base_r
+        # draw track line
+        track_color = (120, 120, 120)
+        pygame.draw.line(surface, track_color,
+                         (self.rect.x + r + 2, self.rect.centery),
+                         (self.rect.x + self.rect.w - r - 2, self.rect.centery), 4)
+        # draw knob
+        color = self.knob_color
+        if self.dragging:
+            color = self.knob_pressed_color
+        elif self.hover:
+            color = self.knob_hover_color
+        pygame.draw.circle(surface, color, (cx, cy), r)
+        # label and value
+        label_surf = font.render(self.label, True, (240, 240, 240))
+        val_surf = font.render(f"{self.value:.2f}", True, (200, 200, 200))
+        surface.blit(label_surf, (self.rect.x, self.rect.y - 24))
+        surface.blit(val_surf, (self.rect.right - val_surf.get_width(), self.rect.y - 24))
+
+    def update_interaction(self, mouse_pos: Tuple[int, int], mouse_down: bool, prev_mouse_down: bool):
+        mx, my = mouse_pos
+        cx, cy = self.knob_center()
+        dist2 = (mx - cx)**2 + (my - cy)**2
+        hovered_now = dist2 <= (int(self.knob_radius * 1.6) ** 2)
+        # begin press
+        if not prev_mouse_down and mouse_down:
+            # mouse was just pressed
+            if hovered_now:
+                self._press_candidate = True
+                self.dragging = True
+        # while held: update dragging behavior if this knob was the press candidate
+        if mouse_down:
+            if self._press_candidate:
+                # when dragging, knob follows horizontal mouse only
+                # compute new fraction relative to track
+                pad = self.knob_radius + 2
+                left = self.rect.x + pad
+                right = self.rect.x + self.rect.w - pad
+                newx = clamp(mx, left, right)
+                frac = (newx - left) / max(1, (right - left))
+                newval = self.min + frac * (self.max - self.min)
+                if newval != self.value:
+                    self.value = newval
+                    if self.on_change:
+                        self.on_change(self.value)
+                # While dragging, the knob should appear pressed only if pointer is over the knob:
+                self.hover = (abs(newx - cx) <= int(self.knob_radius * 1.8))
+            else:
+                # mouse is down but it wasn't pressed on this knob; ensure hover/drag false
+                self.hover = hovered_now
+                self.dragging = False
+        else:
+            # mouse released
+            if prev_mouse_down and not mouse_down:
+                # finalize press candidate if it was on this knob
+                if self._press_candidate:
+                    # release whether on or off the knob; we always stop dragging
+                    self._press_candidate = False
+                    self.dragging = False
+            # hover behavior when mouse is not down
+            self.hover = hovered_now
+
+class Button:
+    def __init__(self, rect: pygame.Rect, text: str, on_click: Callable[[], None] = None):
+        self.rect = rect
+        self.text = text
+        self.on_click = on_click
+        # visuals
+        self.color = (100, 100, 100)
+        self.hover_color = (120, 120, 120)
+        self.pressed_color = (80, 80, 80)
+        self.text_color = (245, 245, 245)
+        # states
+        self.hover = False
+        self._press_candidate = False  # user pressed down on this button
+        self.pressed_visual = False    # visual pressed state while mouse held AND over button
+
+    def draw(self, surface: pygame.Surface, font: pygame.font.Font):
+        # size scaling
+        scale = 1.05 if self.hover else 1.0
+        if self.pressed_visual:
+            scale = 0.95
+        w = int(self.rect.w * scale)
+        h = int(self.rect.h * scale)
+        x = int(self.rect.centerx - w/2)
+        y = int(self.rect.centery - h/2)
+        # rectangle
+        col = self.color
+        if self.pressed_visual:
+            col = self.pressed_color
+        elif self.hover:
+            col = self.hover_color
+        pygame.draw.rect(surface, col, pygame.Rect(x,y,w,h), border_radius=8)
+        # text
+        txt_surf = font.render(self.text, True, self.text_color)
+        tx = x + (w - txt_surf.get_width())//2
+        ty = y + (h - txt_surf.get_height())//2
+        surface.blit(txt_surf, (tx, ty))
+
+    def update_interaction(self, mouse_pos: Tuple[int,int], mouse_down: bool, prev_mouse_down: bool):
+        mx, my = mouse_pos
+        hovered_now = self.rect.collidepoint(mx, my)
+        # handle press start
+        if not prev_mouse_down and mouse_down:
+            if hovered_now:
+                self._press_candidate = True
+                # visual pressed state applied only while mouse is down AND cursor remains over button
+                self.pressed_visual = True
+            else:
+                self._press_candidate = False
+                self.pressed_visual = False
+        elif mouse_down:
+            # while held, update visual pressed depending on whether pointer is over button
+            if self._press_candidate and hovered_now:
+                self.pressed_visual = True
+            else:
+                self.pressed_visual = False
+        else:
+            # mouse released
+            if prev_mouse_down and not mouse_down:
+                if self._press_candidate and hovered_now:
+                    # full click finished: invoke
+                    if self.on_click:
+                        self.on_click()
+                self._press_candidate = False
+                self.pressed_visual = False
+        # hover state is independent: mouse-up hover expands
+        if not mouse_down:
+            self.hover = hovered_now
+        else:
+            # if mouse down and press candidate started elsewhere, don't set hover on other buttons (user story)
+            # But if the candidate started on this button, show hover depending on current pointer location
+            if self._press_candidate:
+                self.hover = hovered_now
+            else:
+                self.hover = False
+
+class SettingsMenu:
+    def __init__(self, on_back: Callable[[], None] = None, on_reset: Callable[[], None] = None,
+                 initial_values: Dict[str, float] = None):
+        if initial_values is None:
+            initial_values = {'volume': 0.8, 'music': 0.7, 'speed': 1.0}
+        self.on_back = on_back
+        self.on_reset = on_reset
+
+        # UI layout constants (center vertical column)
+        screen = pygame.display.get_surface()
+        sw, sh = screen.get_size()
+        center_x = sw // 2
+        top_y = sh // 4
+
+        slider_w = min(600, sw - 120)
+        slider_h = 36
+        gap = 80
+
+        font = pygame.font.Font(None, 28)
+        self.font = font
+
+        # create sliders
+        rect1 = pygame.Rect(center_x - slider_w//2, top_y, slider_w, slider_h)
+        rect2 = pygame.Rect(center_x - slider_w//2, top_y + gap, slider_w, slider_h)
+        rect3 = pygame.Rect(center_x - slider_w//2, top_y + gap*2, slider_w, slider_h)
+
+        self.sliders = {
+            'volume': Slider(rect1, "Volume", initial_values.get('volume', 0.8), on_change=self._on_volume_change),
+            'music': Slider(rect2, "Music Volume", initial_values.get('music', 0.7), on_change=self._on_music_change),
+            'speed': Slider(rect3, "Game Speed", initial_values.get('speed', 1.0), min_val=0.5, max_val=2.0, on_change=self._on_speed_change)
+        }
+
+        # Buttons underneath
+        btn_w = 160
+        btn_h = 52
+        btn_y = top_y + gap*3 + 30
+        reset_rect = pygame.Rect(center_x - btn_w - 20, btn_y, btn_w, btn_h)
+        back_rect = pygame.Rect(center_x + 20, btn_y, btn_w, btn_h)
+        self.button_reset = Button(reset_rect, "Reset", on_click=self._reset)
+        self.button_back = Button(back_rect, "Back", on_click=self._back)
+
+        # internal mouse state tracking
+        self._prev_mouse_down = False
+        self._mouse_pos = (0,0)
+        # optional external callback pointers used to immediately apply settings externally
+        self.external_set_volume = None     # signature: f(volume: float)
+        self.external_set_music = None      # signature: f(music_volume: float)
+        self.external_set_speed = None      # signature: f(speed: float)
+
+    def _on_volume_change(self, v: float):
+        # immediate effect
+        if self.external_set_volume:
+            self.external_set_volume(v)
+
+    def _on_music_change(self, v: float):
+        if self.external_set_music:
+            self.external_set_music(v)
+
+    def _on_speed_change(self, v: float):
+        if self.external_set_speed:
+            self.external_set_speed(v)
+
+    def _reset(self):
+        # default values
+        defaults = {'volume': 0.8, 'music': 0.7, 'speed': 1.0}
+        for k, s in self.sliders.items():
+            s.value = defaults[k]
+            if s.on_change:
+                s.on_change(s.value)
+        if self.on_reset:
+            self.on_reset()
+
+    def _back(self):
+        if self.on_back:
+            self.on_back()
+
+    def store_inputs(self, mouse_pos: Tuple[int,int], mouse_down: bool):
+        # Save mouse pos and handle transitions; call update next
+        self._mouse_pos = mouse_pos
+        self._mouse_down = mouse_down
+
+    def update(self):
+        # update sliders and buttons using current and previous mouse state
+        md = getattr(self, '_mouse_down', False)
+        pmd = self._prev_mouse_down
+        for key, s in self.sliders.items():
+            s.update_interaction(self._mouse_pos, md, pmd)
+        # ensure that while dragging one slider, others do not react (per story)
+        # find active slider
+        active = None
+        for key, s in self.sliders.items():
+            if s.dragging:
+                active = key
+                break
+        if active:
+            # for others, if mouse is down they should not react
+            for key, s in self.sliders.items():
+                if key != active:
+                    # pass mouse_down=False so they behave inertly
+                    s.update_interaction(self._mouse_pos, False, pmd)
+        # buttons
+        self.button_reset.update_interaction(self._mouse_pos, md, pmd)
+        self.button_back.update_interaction(self._mouse_pos, md, pmd)
+
+        self._prev_mouse_down = md
+
+    def draw(self, surface: pygame.Surface):
+        # clear background area / optionally dim
+        sw, sh = surface.get_size()
+        # draw semi-transparent panel background
+        panel = pygame.Surface((sw, sh), pygame.SRCALPHA)
+        panel.fill((0, 0, 0, 120))
+        surface.blit(panel, (0, 0))
+
+        # draw central card
+        card_w = min(760, sw - 40)
+        card_h = min(480, sh - 80)
+        card_x = (sw - card_w) // 2
+        card_y = (sh - card_h) // 2
+        pygame.draw.rect(surface, (20, 20, 20), (card_x, card_y, card_w, card_h), border_radius=10)
+        # title
+        title_font = pygame.font.Font(None, 36)
+        title_surf = title_font.render("Settings", True, (245, 245, 245))
+        surface.blit(title_surf, (card_x + 24, card_y + 16))
+
+        # draw sliders and buttons
+        for s in self.sliders.values():
+            s.draw(surface, self.font)
+        self.button_reset.draw(surface, self.font)
+        self.button_back.draw(surface, self.font)
+
+    def get_values(self) -> Dict[str, float]:
+        return {k: s.value for k, s in self.sliders.items()}
+
+    def set_external_callbacks(self, set_volume_fn: Callable[[float], None], set_music_fn: Callable[[float], None],
+                               set_speed_fn: Callable[[float], None]):
+        self.external_set_volume = set_volume_fn
+        self.external_set_music = set_music_fn
+        self.external_set_speed = set_speed_fn
