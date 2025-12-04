@@ -17,8 +17,8 @@ class Sim:
         self.profit = 0.00
         self.pointMax = 100.0
         self.time = 3600            # Number of frames remaining in the current day.
-        self.maxTime = 3600         # Length of sim days in frames.
-        self.hoursInDay = 12        # Number of hours in one sim day (for converting time to UI display).
+        self.maxTime = 3600         # Length of sim days in frames. # game feels like a good length at 2 minutes, 7200 frames, but for demo, set to 1 minute
+        self.hoursInDay = 14        # Number of hours in one sim day (for converting time to UI display).
         self.startHour = 6          # Hour to start the sim at (for UI display).
         self.employees = []         # Employee instances.
         self.customers = []         # Customer instances.
@@ -1718,6 +1718,8 @@ class Sim:
         currentMinute = startMinute + minutesPassed # Minutes past midnight.
         
         minutePortion = currentMinute % 60
+        # maybe looks cleaner without minutes buzzing about
+        #minutePortion = 0
         hourPortion = currentMinute // 60
         ampm = "am"
         if hourPortion >= 12:
@@ -1741,12 +1743,12 @@ class Sim:
             # Draw HUD
             self.surface.blit(self.hud, [0,0])
             # Draw Time-Remaining Bar:
-            pygame.draw.rect(self.surface,BLUE,(37*self.SCALE,2*self.SCALE,int(120.0*(float(self.time)/self.maxTime))*self.SCALE,12*self.SCALE))
-            self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
+            pygame.draw.rect(self.surface,BLUE,(4*self.SCALE,2*self.SCALE,int(152.0*(float(self.time)/self.maxTime))*self.SCALE,12*self.SCALE))
+            self.surface.blit(self.tmr_cap, [4*self.SCALE + int(152.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
             # Draw HUD Text
             font = pygame.font.SysFont(None,40)
             timeText = self.ticksToString(self.time)
-            profitText = "$420.69"
+            profitText = "$20.48"
             pointText = str(self.points)
             text = font.render(timeText,True,(0,0,0))
             self.surface.blit(text,[5*self.SCALE,4*self.SCALE])
