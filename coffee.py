@@ -324,7 +324,8 @@ def main():
             
             # Settings Menu
             case GameState.gameSettings:
-                surface.blit(settingsMenuBg, (0,0))
+                #surface.blit(settingsMenuBg, (0,0))
+                sim.demoSim()
                 settingsMenu.update()
                 settingsMenu.draw(surface)
 

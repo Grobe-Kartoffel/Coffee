@@ -1719,7 +1719,7 @@ class Sim:
         
         minutePortion = currentMinute % 60
         # maybe looks cleaner without minutes buzzing about
-        #minutePortion = 0
+        minutePortion = 0
         hourPortion = currentMinute // 60
         ampm = "am"
         if hourPortion >= 12:
