@@ -19,14 +19,14 @@ def draw_button_glow(surface, rect, alpha=35):
 
 # Game States
 class GameState(IntEnum):
-    gameIntro = 0       # .
-    gameMainMenu = 1    # .
-    gameSettings = 2    # .
-    gameSim = 3         # .
-    gameEndDay = 4      # .
-    gameMenu = 5        # .
-    gameSupplyMenu = 6  # .
-    gameProductMenu = 7 # .
+    gameIntro = 0
+    gameMainMenu = 1
+    gameSettings = 2
+    gameSim = 3 
+    gameEndDay = 4
+    gameMenu = 5
+    gameSupplyMenu = 6
+    gameProductMenu = 7
 
 def main():
     # Pygame Initialization
@@ -79,6 +79,7 @@ def main():
 
     logoFrame = 0.0 # Elapsed frames since game start.
 
+    # Create surfaces for menu backgrounds.
     mainMenuBg = pygame.image.load("assets/Main Menu.png").convert_alpha()
     settingsMenuBg = pygame.image.load("assets/Settings.png").convert_alpha()
     endDayBg = pygame.image.load("assets/EndofDay Menu.png").convert_alpha()
@@ -90,20 +91,20 @@ def main():
     playBtn = pygame.Rect(512, 276, 256, 64)
     settingsBtn = pygame.Rect(512, 424, 256, 64)
     quitBtn = pygame.Rect(512, 572, 256, 64)
-    #settingsMenu
+    # settingsMenu
     resetBtn = pygame.Rect(512, 528, 256, 64)
     settingsBackBtn = pygame.Rect(512, 628, 256, 64)
-    #gameMenu
+    # gameMenu
     newGameBtn = pygame.Rect(512, 276, 256, 64)
     continueBtn = pygame.Rect(512, 424, 256, 64)
     gameBackBtn = pygame.Rect(512, 572, 256, 64)
-    #endDay
+    # endDay
     nextDayBtn = pygame.Rect(328, 492, 256, 64)
     endDayQuitBtn = pygame.Rect(696, 492, 256, 64)
-    #gameSupplyMenu
+    # gameSupplyMenu
     supplyStartBtn = pygame.Rect(1023,0,256,64)
     suppliesTabBtn = pygame.Rect(260,16,251,47)
-    #gameProductsMenu
+    # gameProductsMenu
     productStartBtn = pygame.Rect(1023,0,256,64)
     productsTabBtn = pygame.Rect(0,16,251,47)
 
@@ -114,8 +115,7 @@ def main():
     settingsMenu = st.SettingsMenu(
         on_back = goBackToMain,
         on_reset = None,
-        initial_values = None
-    )
+        initial_values = None)
 
     while (True):
         mouseXY = pygame.mouse.get_pos()
@@ -228,6 +228,7 @@ def main():
             logoFrame += 1
         # End data processing logic ------------------
         
+        
         # Drawing code goes here, selected by gameState:
         #Set background color
         surface.fill(BLACK)
@@ -265,7 +266,7 @@ def main():
                 if quitBtn.collidepoint(mx, my):
                      draw_button_glow(surface, quitBtn)
                      draw_button_outline(surface, quitBtn)    
-               
+            
             # -TODO-
             case GameState.gameMenu:
                 sim.demoSim()
@@ -283,9 +284,8 @@ def main():
                 if gameBackBtn.collidepoint(mx, my):
                     draw_button_glow(surface, gameBackBtn)
                     draw_button_outline(surface, gameBackBtn)
-
-                
-            # Supplies and Products Tab Buttons outlines need changed to fit shape 
+            
+            # TODO: Supplies and Products Tab Buttons outlines need changed to fit shape 
             # Supplies Menu
             case GameState.gameSupplyMenu:
                 surface.blit(supplyMenubg, (0,0))

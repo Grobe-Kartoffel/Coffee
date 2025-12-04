@@ -18,6 +18,8 @@ class Sim:
         self.pointMax = 100.0
         self.time = 3600            # Number of frames remaining in the current day.
         self.maxTime = 3600         # Length of sim days in frames.
+        self.hoursInDay = 12        # Number of hours in one sim day (for converting time to UI display).
+        self.startHour = 6          # Hour to start the sim at (for UI display).
         self.employees = []         # Employee instances.
         self.customers = []         # Customer instances.
         self.objects = []           # Object instances.
@@ -137,6 +139,7 @@ class Sim:
         # Other Images:
         self.bbl = pygame.image.load("assets/bbl.png").convert_alpha()
         self.bbl = pygame.transform.scale_by(self.bbl,SCALE)
+    
     class Emp:
         # Static vars belonging to class, not one individual instance:
         # Lists containing the orders that require each of the supply types so that emp1 knows where to get the proper supply item:
@@ -164,6 +167,7 @@ class Sim:
             self.order = 0
             self.orderLoc = -1
             self.patience = 20
+    
     class Cust:
         def __init__(self,ID,loc,order,task):
             self.ID = ID
@@ -173,10 +177,12 @@ class Sim:
             self.order = order
             self.task = task
             self.patience = 620 # Max customer waiting time in ticks - 620 = 10.33 seconds at 60FPS (0.33 for 20-tick order animation).
+    
     class Obj:
         def __init__(self,ID,loc):
             self.ID = ID
             self.loc = [loc[0],loc[1]]
+    
     def getObjImg(self,ID,x):
         img = None
         if(ID==81):
@@ -928,9 +934,11 @@ class Sim:
                 continue
             i += 1
         self.draw(False)
+    
     def newSim(self): # Resets sim and sim data in preparation for a new game
         # code to reset all save data
         self.continueSim()
+    
     def continueSim(self): # Prepares sim for a new day
         # delete all customers
         while(len(self.customers)>0):
@@ -954,6 +962,7 @@ class Sim:
         self.time = self.maxTime
         self.points = 0
         self.profit = 0.00
+    
     def runSim(self):
         # handle customers
         i = 0
@@ -1689,6 +1698,7 @@ class Sim:
         self.draw(True)
         if(self.time>0):
             self.time -= 1
+    
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = [int(MouseXY[0]/(16*self.SCALE)),int(MouseXY[1]/(16*self.SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
@@ -1700,6 +1710,25 @@ class Sim:
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
             return
+    
+    def ticksToString(self, time): # Determines the sim time in 12-hour format based on the number of ticks passed.
+        timeRemaining = time/self.maxTime
+        minutesPassed = (1-timeRemaining)*self.hoursInDay*60
+        startMinute = self.startHour*60
+        currentMinute = startMinute + minutesPassed # Minutes past midnight.
+        
+        minutePortion = currentMinute % 60
+        hourPortion = currentMinute // 60
+        ampm = "am"
+        if hourPortion >= 12:
+            ampm = "pm"
+            hourPortion -= 12
+        if hourPortion == 0:
+            hourPortion = 12
+        
+        # :02d ensures min width of two digits.
+        return f"{int(hourPortion):02d}:{int(minutePortion):02d}{ampm}"
+    
     def draw(self,drawHud): # Draws the simulation to the screen.
         # Color Constants
         BLUE = (18,83,175)
@@ -1712,11 +1741,11 @@ class Sim:
             # Draw HUD
             self.surface.blit(self.hud, [0,0])
             # Draw Time-Remaining Bar:
-            pygame.draw.rect(self.surface,BLUE,(37*self.SCALE,2*self.SCALE,int(120.0*(float(self.time)/3600.0))*self.SCALE,12*self.SCALE))
-            self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])            
+            pygame.draw.rect(self.surface,BLUE,(37*self.SCALE,2*self.SCALE,int(120.0*(float(self.time)/self.maxTime))*self.SCALE,12*self.SCALE))
+            self.surface.blit(self.tmr_cap, [37*self.SCALE + int(120.0*(float(self.time)/float(self.maxTime)))*self.SCALE,2*self.SCALE])
             # Draw HUD Text
             font = pygame.font.SysFont(None,40)
-            timeText = "6:00 am"
+            timeText = self.ticksToString(self.time)
             profitText = "$420.69"
             pointText = str(self.points)
             text = font.render(timeText,True,(0,0,0))
