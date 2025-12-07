@@ -42,7 +42,7 @@ def main():
     surface = pygame.display.set_mode(size)
     
     pygame.display.set_caption("Coffee Shop Simulator")      # window title
-    icon = pygame.image.load("assets/icon.png")
+    icon = pygame.image.load("assets/graphics/icon.png")
     pygame.display.set_icon(icon)
     
     clock = pygame.time.Clock()                             # Manage timing for screen updates    
@@ -83,17 +83,17 @@ def main():
     }
     
     # Image Files
-    logo = pygame.image.load("assets/logo.png").convert_alpha(surface)
+    logo = pygame.image.load("assets/graphics/logo.png").convert_alpha(surface)
 
     logoFrame = 0.0 # Elapsed frames since game start.
 
     # Create surfaces for menu backgrounds.
-    mainMenuBg = pygame.image.load("assets/Main Menu.png").convert_alpha()
-    settingsMenuBg = pygame.image.load("assets/Settings.png").convert_alpha()
-    endDayBg = pygame.image.load("assets/EndofDay Menu.png").convert_alpha()
-    gameMenuBg = pygame.image.load("assets/Game Menu.png").convert_alpha()
-    productMenubg = pygame.image.load("assets/Product Menu.png").convert_alpha()
-    supplyMenubg = pygame.image.load("assets/Supply Menu.png").convert_alpha()
+    mainMenuBg = pygame.image.load("assets/graphics/Main Menu.png").convert_alpha()
+    settingsMenuBg = pygame.image.load("assets/graphics/Settings.png").convert_alpha()
+    endDayBg = pygame.image.load("assets/graphics/EndofDay Menu.png").convert_alpha()
+    gameMenuBg = pygame.image.load("assets/graphics/Game Menu.png").convert_alpha()
+    productMenubg = pygame.image.load("assets/graphics/Product Menu.png").convert_alpha()
+    supplyMenubg = pygame.image.load("assets/graphics/Supply Menu.png").convert_alpha()
 
     # mainMenu
     playBtn = pygame.Rect(512, 276, 256, 64)
