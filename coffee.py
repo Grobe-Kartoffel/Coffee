@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod # Not sure why abstract classes need to be i
 # Import class files. IDE might complain that the file cannot be found, but it will still work.
 import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm
 
+
 # "Button Animation" gives buttons border and a highlight
 def draw_button_outline(surface, rect, thickness= 4):
     pygame.draw.rect(surface, (255, 255, 255), rect, thickness)
@@ -14,7 +15,6 @@ def draw_button_glow(surface, rect, alpha=35):
     glow_surf = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
     pygame.draw.rect(glow_surf, (255, 255, 255, alpha), (0, 0, rect.w, rect.h))
     surface.blit(glow_surf, rect.topleft)
-
 
 
 # Game States
@@ -28,9 +28,12 @@ class GameState(IntEnum):
     gameSupplyMenu = 6
     gameProductMenu = 7
 
+simSpeed = 1.0 # Currently unused.
+
 def main():
     # Pygame Initialization
     pygame.init()                                           # initialize game engine
+    pygame.mixer.init()
     
     SCALE = 4                                               # set scale factor for graphics
     W=320*SCALE                                             # set window size
@@ -74,7 +77,12 @@ def main():
     salesDataThread = threading.Thread(target=data.readSalesData, args=(settings,progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
     
-    # image files
+    # Sound Files
+    sounds = {
+        "buttonClick": pygame.mixer.Sound("assets/sfx/click.wav")
+    }
+    
+    # Image Files
     logo = pygame.image.load("assets/logo.png").convert_alpha(surface)
 
     logoFrame = 0.0 # Elapsed frames since game start.
@@ -115,7 +123,23 @@ def main():
     settingsMenu = st.SettingsMenu(
         on_back = goBackToMain,
         on_reset = None,
-        initial_values = None)
+        initial_values = None
+    )
+
+    def volume_sfx_changed(value):
+        for name, sound in sounds.items():
+            sound.set_volume(value)
+    def volume_music_changed(value):
+        pygame.mixer.music.set_volume(value)
+    def speed_changed(value):
+        global simSpeed
+        simSpeed = value
+
+    settingsMenu.set_external_callbacks(
+        volume_sfx_changed,
+        volume_music_changed,
+        speed_changed
+    )
 
     while (True):
         mouseXY = pygame.mouse.get_pos()
@@ -140,22 +164,28 @@ def main():
                 case GameState.gameMainMenu:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if playBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameMenu
                         elif settingsBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameSettings
                         elif quitBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             pygame.quit()
                             sys.exit()
                 # -TODO-
                 case GameState.gameMenu:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if newGameBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             sim.newSim()
                             gameState = GameState.gameProductMenu
                         elif continueBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             sim.continueSim()
                             gameState = GameState.gameProductMenu
                         elif gameBackBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameMainMenu
                 
                 # Supplies Menu
@@ -165,8 +195,10 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameSim
                         elif suppliesTabBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameProductMenu
                 
                 # Products Menu
@@ -176,8 +208,10 @@ def main():
 
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameSim
                         elif productsTabBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             gameState = GameState.gameSupplyMenu
                 
                 # Settings Menu
@@ -188,9 +222,11 @@ def main():
                 case GameState.gameEndDay:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if nextDayBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             sim.continueSim() # prepare sim for another day
                             gameState = GameState.gameProductMenu
                         elif endDayQuitBtn.collidepoint(mouseXY):
+                            sounds["buttonClick"].play()
                             sim.continueSim()
                             gameState = GameState.gameMainMenu
             # End input logic ------------------
