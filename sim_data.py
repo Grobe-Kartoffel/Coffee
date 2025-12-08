@@ -25,25 +25,34 @@ class SimData:
     
     def addSupply(self, ID, name):
         # TODO
+        pass
     def addProduct(self, ID, name, price, cost):
         # TODO
+        pass
     def addSupplyHistory(self, ID, goal, ordered, used):
         # TODO
+        pass
     def addProductHistory(self, ID, sales):
         # TODO
+        pass
     def eraseHistory(self):
         # TODO
+        pass
     def storeInput(self):
         # TODO
-    
+        pass
     def drawSupplyGraph(self, supplyID):
         # TODO
         # Draw empty graph if -1
+        pass
     def drawRevenueGraph(self, productID):
         # TODO
         # Draw total of all products if -1
+        pass
     def drawSalesGraph(self, productID):
         # TODO
         # Draw empty graph if -1
+        pass
     def drawEndOfDayGraph(self):
         # TODO
+        pass
