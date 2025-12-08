@@ -3,60 +3,153 @@ from typing import Callable, Tuple, Dict
 
 class Settings:
     def __init__(self):
-        self.products = []       # product ID and description for each product
-        self.prodSupplies = []   # list of supplies needed for each product
-        self.prodSupplyAmt = []  # list of supply amounts needed for each product
-        self.prodPrices = []     # price of each product
-        self.supplies = []       # supply ID and description for each supply
-        self.supPrices = []      # price of each supply
+        self.Products = []
+        self.Supplies = []
+        self.money = 100.0
+        #self.products = []       # product ID and description for each product
+        #self.prodSupplies = []   # list of supplies needed for each product
+        #self.prodSupplyAmt = []  # list of supply amounts needed for each product
+        #self.prodPrices = []     # price of each product
+        #self.supplies = []       # supply ID and description for each supply
+        #self.supPrices = []      # price of each supply
         self.lock = threading.Lock()
-    def __str__(self): # function is called when class object is placed in the print() function
-        string = ""
-        i = 0
-        while(i<len(self.products)):
-            string += f"ID:\t\t{self.products[i][0]}\nDesc:\t\t{self.products[i][1]}\n" # product ID and Description
-            j = 0
-            string += "Supplies:\t"                                                     # supplies
-            while(j<len(self.prodSupplies[i])):
-                string += f"[ID: {self.prodSupplies[i][j]}"
-                k = 0
-                while(k<len(self.supplies)):
-                    if(self.supplies[k][0]==self.prodSupplies[i][j]):
-                        string += f"; Desc: {self.supplies[k][1]}"
-                        break
-                    k += 1
-                string += f"; Amt: {self.prodSupplyAmt[i][j]}]"
-                j += 1
-                if(j<len(self.prodSupplies[i])):
-                    string += ", "
-            string += "\n"
-            string += f"Price:\t\t{self.prodPrices[i]}\n\n\n"                                   # price
-            i += 1
-        return string
-    def addProd(self,ID,desc,price):
+    class Supply:
+        def __init__(self,ID):
+            self.ID = 0
+            self.name = ""
+            self.price = 0.0
+            self.amt = 0.0
+            self.goalAmt = 0.0
+    class Product:
+        def __init__(self,ID,name):
+            self.ID = 0
+            self.name = ""
+            self.price = 0.0
+            self.supplies = []
+            self.supAmts = []
+    
+    #def __str__(self): # function is called when class object is placed in the print() function
+    #    string = ""
+    #    i = 0
+    #    while(i<len(self.products)):
+    #        string += f"ID:\t\t{self.products[i][0]}\nDesc:\t\t{self.products[i][1]}\n" # product ID and Description
+    #        j = 0
+    #        string += "Supplies:\t"                                                     # supplies
+    #        while(j<len(self.prodSupplies[i])):
+    #            string += f"[ID: {self.prodSupplies[i][j]}"
+    #            k = 0
+    #            while(k<len(self.supplies)):
+    #                if(self.supplies[k][0]==self.prodSupplies[i][j]):
+    #                    string += f"; Desc: {self.supplies[k][1]}"
+    #                    break
+    #                k += 1
+    #            string += f"; Amt: {self.prodSupplyAmt[i][j]}]"
+    #            j += 1
+    #            if(j<len(self.prodSupplies[i])):
+    #                string += ", "
+    #        string += "\n"
+    #        string += f"Price:\t\t{self.prodPrices[i]}\n\n\n"                                   # price
+    #        i += 1
+    #    return string
+    def addProd(self,ID,name,price):
         with self.lock:
-            self.products.append([ID,desc])
-            self.prodSupplies.append([])
-            self.prodSupplyAmt.append([])
-            self.prodPrices.append(price)
+            self.Products.append(self.Product(ID,name))
+            self.Products[len(self.Products)-1].price = price
     def addSup(self,ID):
         with self.lock:
-            self.supplies.append([ID,""])
-            self.supPrices.append(0) 
+            self.Supplies.append(self.Supply(ID)) 
+            self.Supplies[len(self.Supplies)-1].amt = 100.0
+            self.Supplies[len(self.Supplies)-1].goalAmt = 100.0
     def addProdSup(self,prodID,supID,supAmt):
         with self.lock:
-            self.prodSupplies[prodID].append(supID)
-            self.prodSupplyAmt[prodID].append(supAmt)
+            i = 0
+            while(self.Products[i].ID!=ID and i<len(self.Products)):
+                i += 1
+            if(i>=len(self.Products)):
+                return
+            self.Products[i].supplies.append(supID)
+            self.Products[i].supAmts.append(supAmt)
     def setSupPrice(self,ID,price):
         with self.lock:
-            self.supPrices[ID] = price
-    def setSupDesc(self,ID,desc):
+            i = 0
+            while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+                i += 1
+            if(i>=len(self.Supplies)):
+                return
+            self.Supplies[i].price = price
+    def setSupDesc(self,ID,name):
         with self.lock:
-            self.supplies[ID][1] = desc
+            i = 0
+            while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+                i += 1
+            if(i>=len(self.Supplies)):
+                return
+            self.Supplies[i].name = name
         return
-
+    def getSups(self): # return list of ID's+Names
+        sups = []
+        for s in self.Supplies:
+            sups.append([s.ID,s.name])
+        return sups
+    def getSupPrice(self,ID):
+        i = 0
+        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+            i += 1
+        if(i>=len(self.Supplies)): # if we didn't find the supply, return a price of 0
+            return 0.0
+        return self.Supplies[i].price
+    def getSupAmt(self,ID):
+        i = 0
+        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+            i += 1
+        if(i>=len(self.Supplies)): # if we didn't find the supply, return an amount of 0
+            return 0.0
+        return self.Supplies[i].amt        
+    def getSupGoal(self,ID):
+        i = 0
+        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+            i += 1
+        if(i>=len(self.Supplies)): # if we didn't find the supply, return a goalAmount of 0
+            return 0.0
+        return self.Supplies[i].goalAmt        
+    def getProds(self): # return list of ID's+Names
+        prods = []
+        for p in self.Products:
+            prods.append([p.ID,p.name])
+        return prods
+    def getProdPrice(self,ID):
+        i = 0
+        while(self.Products[i].ID!=ID and i<len(self.Products)):
+            i += 1
+        if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
+            return 0.0
+        return self.Products[i].price        
+    def getProdSupCost(self,ID): # return total cost of all supplies and their amounts that go into the product
+        i = 0
+        cost = 0.0
+        while(self.Products[i].ID!=ID and i<len(self.Products)):
+            i += 1
+        if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
+            return 0.0
+        j = 0
+        while(j<len(self.Products[i].supplies) and j<len(self.Products[i].supAmts)):
+            sCost = 0.0
+            k = 0
+            # get the price of the supply
+            while(self.Supplies[k].ID!=self.Products[i].supplies[j] and k<len(self.Supplies)):
+                k += 1
+            if(k>=len(self.Supplies)):
+                j += 1
+                continue
+            sCost = self.Supplies[k].price
+            # multiply the price by the amount
+            sCost *= self.Products[i].supAmts[j]
+            # add to total cost
+            cost += sCost
+            # increment J
+            j += 1
+        return cost
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
-
 def clamp(v, a, b):
     return max(a, min(b, v))
 
