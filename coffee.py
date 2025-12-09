@@ -179,10 +179,19 @@ def main():
     while (True):
         mouseXY = pygame.mouse.get_pos()
         mouseDown = pygame.mouse.get_pressed()[0]
+        # send mouse inputs to classes regardless of whether there are other events or not
+        match gameState:
+            case GameState.gameSupplyMenu:
+                settings.storeInputs(mouseXY,mouseDown)
+            case GameState.gameProductMenu:
+                settings.storeInputs(mouseXY,mouseDown)
+            case GameState.gameSettings:
+                settingsMenu.store_inputs(mouseXY, mouseDown)   
+            case GameState.gameEndDay:
+                simData.storeInputs(mouseXY,mouseDown)
 
         # Captures state of the game - loops thru changes:
         for event in pygame.event.get():
-
             # Quits game on X window button or ESC key press:
             if ( event.type == pygame.QUIT or (event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE)): 
                 pygame.quit()
@@ -241,9 +250,6 @@ def main():
                 
                 # Supplies Menu
                 case GameState.gameSupplyMenu:
-                    #settings.mouseXY = mouseXY
-                    #settings.mouseDown = mouseDown
-                    settings.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
@@ -254,9 +260,6 @@ def main():
                 
                 # Products Menu
                 case GameState.gameProductMenu:
-                    #settings.mouseXY = mouseXY
-                    #settings.mouseDown = mouseDown
-                    settings.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
@@ -265,13 +268,8 @@ def main():
                             sounds["buttonClick"].play()
                             changeState(GameState.gameSupplyMenu)
                 
-                # Settings Menu
-                case gameState.gameSettings:
-                    settingsMenu.store_inputs(mouseXY, mouseDown)
-                
                 # End-of-Day Menu
                 case GameState.gameEndDay:
-                    simData.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if nextDayBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
