@@ -63,7 +63,7 @@ def main():
     # Local  Variables
     data = ac.Accuracy_Data()              # create class objects
     progressBar = pm.Progress_Manager()
-    settings = st.Settings()
+    settings = st.Settings(SCALE)
     simData = sd.SimData()
     sim = sm.Sim(surface,SCALE)
     sim.acDataRef = data

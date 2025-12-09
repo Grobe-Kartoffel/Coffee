@@ -2,7 +2,7 @@ import threading, pygame
 from typing import Callable, Tuple, Dict
 
 class Settings:
-    def __init__(self):
+    def __init__(self,SCALE):
         self.Products = []
         self.Supplies = []
         self.money = 100.0
@@ -12,7 +12,68 @@ class Settings:
         self.productScroll = 0.0
         self.supplySelect = -1
         self.productSelect = -1
+        self.scrollSelect = False
+        self.sliderSelect = -1
         self.lock = threading.Lock()
+        # image files
+        self.SCALE = SCALE
+        # list elements
+        self.itemHigh = pygame.image.load("assets/graphics/list_item_1.png").convert_alpha()
+        self.itemHigh = pygame.transform.scale_by(self.itemHigh,SCALE)
+        self.itemLow = pygame.image.load("assets/graphics/list_item_2.png").convert_alpha()
+        self.itemLow = pygame.transform.scale_by(self.itemLow,SCALE)
+        self.scrlBarLow = pygame.image.load("assets/graphics/scrl_bar_1.png").convert_alpha()
+        self.scrlBarLow = pygame.transform.scale_by(self.scrlBarLow,SCALE)
+        self.scrlBarHigh = pygame.image.load("assets/graphics/scrl_bar_2.png").convert_alpha()
+        self.scrlBarHigh = pygame.transform.scale_by(self.scrlBarHigh,SCALE)
+        self.sldrKnbLow = pygame.image.load("assets/graphics/sldr_knb_1.png").convert_alpha()
+        self.sldrKnbLow = pygame.transform.scale_by(self.sldrKnbLow,SCALE)
+        self.sldrKnbHigh = pygame.image.load("assets/graphics/sldr_knb_2.png").convert_alpha()
+        self.sldrKnbHigh = pygame.transform.scale_by(self.sldrKnbHigh,SCALE)
+        # objects
+        self.bttl = pygame.image.load("assets/graphics/bttl.png").convert_alpha()
+        self.bttl = pygame.transform.scale_by(self.bttl,SCALE)
+        self.chk_pwd = pygame.image.load("assets/graphics/chk_pwd.png").convert_alpha()
+        self.chk_pwd = pygame.transform.scale_by(self.chk_pwd,SCALE)
+        self.cof_bn = pygame.image.load("assets/graphics/cof_bn.png").convert_alpha()
+        self.cof_bn = pygame.transform.scale_by(self.cof_bn,SCALE)
+        self.cup_lg1 = pygame.image.load("assets/graphics/cup_lg_1.png").convert_alpha()
+        self.cup_lg1 = pygame.transform.scale_by(self.cup_lg1,SCALE)
+        self.cup_lg2 = pygame.image.load("assets/graphics/cup_lg_2.png").convert_alpha()
+        self.cup_lg2 = pygame.transform.scale_by(self.cup_lg2,SCALE)
+        self.cup_rg1 = pygame.image.load("assets/graphics/cup_rg_1.png").convert_alpha()
+        self.cup_rg1 = pygame.transform.scale_by(self.cup_rg1,SCALE)
+        self.cup_rg2 = pygame.image.load("assets/graphics/cup_rg_2.png").convert_alpha()
+        self.cup_rg2 = pygame.transform.scale_by(self.cup_rg2,SCALE)
+        self.cup_sm1 = pygame.image.load("assets/graphics/cup_sm_1.png").convert_alpha()
+        self.cup_sm1 = pygame.transform.scale_by(self.cup_sm1,SCALE)
+        self.cup_sm2 = pygame.image.load("assets/graphics/cup_sm_2.png").convert_alpha()
+        self.cup_sm2 = pygame.transform.scale_by(self.cup_sm2,SCALE)
+        self.mug = pygame.image.load("assets/graphics/mug.png").convert_alpha()
+        self.mug = pygame.transform.scale_by(self.mug,SCALE)
+        self.pstry = pygame.image.load("assets/graphics/pstry.png").convert_alpha()
+        self.pstry = pygame.transform.scale_by(self.pstry,SCALE)
+        self.shrt = pygame.image.load("assets/graphics/shrt.png").convert_alpha()
+        self.shrt = pygame.transform.scale_by(self.shrt,SCALE)
+        self.syrp = pygame.image.load("assets/graphics/syrp.png").convert_alpha()
+        self.syrp = pygame.transform.scale_by(self.syrp,SCALE)
+        self.tea_lvs = pygame.image.load("assets/graphics/tea_lvs.png").convert_alpha()
+        self.tea_lvs = pygame.transform.scale_by(self.tea_lvs,SCALE)
+        # object ID lists
+        # Lists containing the orders that require each of the supply types so that emp1 knows where to get the proper supply item:
+        self.sup_cof  = [1,2,3,4,5,6,7,8,9,10,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,87]    # coffee beans
+        self.sup_tea  = [11,12,13,14,15,16,17,18,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]                # tea leaves
+        self.sup_coco = [19,20,21,58,59,60,61,62,63]                                                             # cocoa powders
+        self.sup_syr  = [64,65,66,67]                                                                            # syrups
+        self.sup_pas  = [69,70,71,72,73,74,75,76,77,78,79]                                                       # pastries
+        self.sup_mug  = [82]                                                                                     # mugs
+        self.sup_cup  = [83]                                                                                     # cups
+        self.sup_shr  = [81]                                                                                     # shirts
+        self.prod_wet = [22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,87]
+        self.prod_dry = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,64,65,66,67,69,70,71,72,73,74,75,76,77,78,79,81,82,83]
+        self.prod_sm  = [22,25,28,31,34,37,38,87]
+        self.prod_rg  = [23,26,29,32,35,39,40,42,44,46,48,50,52,54,56,58,60,62]
+        self.prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]        
     class Supply:
         def __init__(self,ID):
             self.ID = 0
@@ -147,8 +208,30 @@ class Settings:
         self.supplySelect = -1
         self.productSelect = -1        
     def displaySupplyMenu(self,surface):
+        # highest the scroll bar can be drawn is (154,20)*SCALE
+        # lowest it can be drawn is (154,160)*SCALE        
+        if(self.scrollSelect):
+            surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
+        else:
+            surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
+        self.supplyScroll += 0.01
+        if(self.supplyScroll>1):
+            self.supplyScroll = 0.0
+            self.scrollSelect = not self.scrollSelect
+            
         return self.supplySelect
     def displayProductMenu(self,surface):
+        # highest the scroll bar can be drawn is (154,20)*SCALE
+        # lowest it can be drawn is (154,160)*SCALE        
+        if(self.scrollSelect):
+            surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
+        else:
+            surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
+        self.productScroll += 0.01
+        if(self.productScroll>1):
+            self.productScroll = 0.0
+            self.scrollSelect = not self.scrollSelect
+            
         return self.productSelect
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
 def clamp(v, a, b):
