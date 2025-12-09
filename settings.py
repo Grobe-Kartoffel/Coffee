@@ -1,6 +1,9 @@
 import threading, pygame
 from typing import Callable, Tuple, Dict
 
+# TO DO:
+# Supplies of ID 21 and onward are missing their price
+
 class Settings:
     def __init__(self,SCALE):
         self.Products = []
@@ -75,17 +78,25 @@ class Settings:
         self.prod_sm  = [22,25,28,31,34,37,38,87]
         self.prod_rg  = [23,26,29,32,35,39,40,42,44,46,48,50,52,54,56,58,60,62]
         self.prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]        
+    def __str__(self):
+        string = "Supplies:\n"
+        for s in self.Supplies:
+            string += f"{s.ID:d}, {s.name:s}, {s.price:.2f}, {s.amt:.2f}, {s.goalAmt:.2f}\n"
+        string += "\nProducts:\n"
+        for p in self.Products:
+            string += f"{p.ID:d}, {p.name:s}, {p.price:.2f}\n"
+        return string
     class Supply:
         def __init__(self,ID):
-            self.ID = 0
+            self.ID = ID
             self.name = ""
             self.price = 0.0
             self.amt = 0.0
             self.goalAmt = 0.0
     class Product:
         def __init__(self,ID,name):
-            self.ID = 0
-            self.name = ""
+            self.ID = ID
+            self.name = name
             self.price = 0.0
             self.supplies = []
             self.supAmts = []
@@ -214,6 +225,39 @@ class Settings:
         self.productScroll = 0.0
         self.supplySelect = -1
         self.productSelect = -1        
+    def getObjImage(self,ID):
+        img = None
+        if(ID==81):
+            img = self.shrt
+        elif(ID==82):
+            img = self.mug
+        elif(ID==83):
+            img = self.bttl
+        elif(ID==84):
+            img = self.cup_sm1
+        elif(ID==85):
+            img = self.cup_rg1
+        elif(ID==86):
+            img = self.cup_lg1
+        elif(ID in self.sup_pas):
+            img = self.pstry
+        elif(ID in self.sup_syr):
+            img = self.syrp
+        elif(ID in self.prod_sm):
+            img = self.cup_sm2
+        elif(ID in self.prod_rg):
+            img = self.cup_rg2
+        elif(ID in self.prod_lg):
+            img = self.cup_lg2
+        elif(ID in self.sup_cof):
+            img = self.cof_bn
+        elif(ID in self.sup_tea):
+            img = self.tea_lvs
+        elif(ID in self.sup_coco):
+            img = self.chk_pwd
+        else:                            # this obj should only show up on the value sliders, if it shows up as an icon, we know something is wrong
+            img = self.sldrKnbHigh
+        return img        
     def displaySupplyMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
         # lowest it can be drawn is (154,160)*SCALE
@@ -238,14 +282,24 @@ class Settings:
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
+        font = pygame.font.SysFont(None,40)
         while(i<len(self.Supplies)):
             h = 21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll
-            if(self.supplySelect==i and h>=20 and h<=160):
+            if(h<20 or h>160):
+                i += 1
+                continue
+            if(self.supplySelect==i):
                 surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
-            elif(h>=20 and h<=160):
+            else:
                 surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
+            # icons should be displayed at (7,24)*SCALE, plus the height offset of the element it cooresponds to
+            img = self.getObjImage(self.Supplies[i].ID)
+            surface.blit(img, (7*self.SCALE, (h+3)*self.SCALE ))
+            # text should be displayed at (28,23)*SCALE plus the height offset of the element it cooresponds to
+            text = font.render(str(self.Supplies[i].name),True,(0,0,0))
+            surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])            
             i += 1
-            
+        
         return self.supplySelect
     def displayProductMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
@@ -271,12 +325,22 @@ class Settings:
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
+        font = pygame.font.SysFont(None,40)
         while(i<len(self.Products)):
             h = 21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll
-            if(self.productSelect==i and h>=20 and h<=160):
+            if(h<20 or h>160):
+                i += 1
+                continue            
+            if(self.productSelect==i):
                 surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
-            elif(h>=20 and h<=160):
+            else:
                 surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
+            # icons should be displayed at (7,24)*SCALE, plus the height offset of the element is cooresponds to
+            img = self.getObjImage(self.Products[i].ID)
+            surface.blit(img, (7*self.SCALE, (h+3)*self.SCALE ))
+            # text should be displayed at (28,23)*SCALE plus the height offset of the element it cooresponds to
+            text = font.render(str(self.Products[i].name),True,(0,0,0))
+            surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])            
             i += 1
             
         return self.productSelect

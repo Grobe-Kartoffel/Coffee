@@ -306,6 +306,7 @@ def main():
             dataState = 3 # indicate data is done processing
         if(dataState==3):  # Used for debug.
             dataState += 1
+            print(settings)
         # Intro logo logic
         if(dataState>0 and logoFrame<=LOGO_FRAME_TOTAL):
             logoFrame += 1
