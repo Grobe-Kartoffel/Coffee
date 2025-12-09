@@ -6,12 +6,6 @@ class Settings:
         self.Products = []
         self.Supplies = []
         self.money = 100.0
-        #self.products = []       # product ID and description for each product
-        #self.prodSupplies = []   # list of supplies needed for each product
-        #self.prodSupplyAmt = []  # list of supply amounts needed for each product
-        #self.prodPrices = []     # price of each product
-        #self.supplies = []       # supply ID and description for each supply
-        #self.supPrices = []      # price of each supply
         self.lock = threading.Lock()
     class Supply:
         def __init__(self,ID):
@@ -27,30 +21,6 @@ class Settings:
             self.price = 0.0
             self.supplies = []
             self.supAmts = []
-    
-    #def __str__(self): # function is called when class object is placed in the print() function
-    #    string = ""
-    #    i = 0
-    #    while(i<len(self.products)):
-    #        string += f"ID:\t\t{self.products[i][0]}\nDesc:\t\t{self.products[i][1]}\n" # product ID and Description
-    #        j = 0
-    #        string += "Supplies:\t"                                                     # supplies
-    #        while(j<len(self.prodSupplies[i])):
-    #            string += f"[ID: {self.prodSupplies[i][j]}"
-    #            k = 0
-    #            while(k<len(self.supplies)):
-    #                if(self.supplies[k][0]==self.prodSupplies[i][j]):
-    #                    string += f"; Desc: {self.supplies[k][1]}"
-    #                    break
-    #                k += 1
-    #            string += f"; Amt: {self.prodSupplyAmt[i][j]}]"
-    #            j += 1
-    #            if(j<len(self.prodSupplies[i])):
-    #                string += ", "
-    #        string += "\n"
-    #        string += f"Price:\t\t{self.prodPrices[i]}\n\n\n"                                   # price
-    #        i += 1
-    #    return string
     def addProd(self,ID,name,price):
         with self.lock:
             self.Products.append(self.Product(ID,name))
@@ -63,7 +33,7 @@ class Settings:
     def addProdSup(self,prodID,supID,supAmt):
         with self.lock:
             i = 0
-            while(self.Products[i].ID!=ID and i<len(self.Products)):
+            while(i<len(self.Products) and self.Products[i].ID!=prodID):
                 i += 1
             if(i>=len(self.Products)):
                 return
@@ -72,7 +42,7 @@ class Settings:
     def setSupPrice(self,ID,price):
         with self.lock:
             i = 0
-            while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+            while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
                 i += 1
             if(i>=len(self.Supplies)):
                 return
@@ -80,7 +50,7 @@ class Settings:
     def setSupDesc(self,ID,name):
         with self.lock:
             i = 0
-            while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+            while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
                 i += 1
             if(i>=len(self.Supplies)):
                 return
@@ -93,21 +63,21 @@ class Settings:
         return sups
     def getSupPrice(self,ID):
         i = 0
-        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+        while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
             i += 1
         if(i>=len(self.Supplies)): # if we didn't find the supply, return a price of 0
             return 0.0
         return self.Supplies[i].price
     def getSupAmt(self,ID):
         i = 0
-        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+        while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
             i += 1
         if(i>=len(self.Supplies)): # if we didn't find the supply, return an amount of 0
             return 0.0
         return self.Supplies[i].amt        
     def getSupGoal(self,ID):
         i = 0
-        while(self.Supplies[i].ID!=ID and i<len(self.Supplies)):
+        while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
             i += 1
         if(i>=len(self.Supplies)): # if we didn't find the supply, return a goalAmount of 0
             return 0.0
@@ -119,7 +89,7 @@ class Settings:
         return prods
     def getProdPrice(self,ID):
         i = 0
-        while(self.Products[i].ID!=ID and i<len(self.Products)):
+        while(i<len(self.Products) and self.Products[i].ID!=ID):
             i += 1
         if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
             return 0.0
@@ -127,7 +97,7 @@ class Settings:
     def getProdSupCost(self,ID): # return total cost of all supplies and their amounts that go into the product
         i = 0
         cost = 0.0
-        while(self.Products[i].ID!=ID and i<len(self.Products)):
+        while(i<len(self.Products) and self.Products[i].ID!=ID):
             i += 1
         if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
             return 0.0
@@ -136,7 +106,7 @@ class Settings:
             sCost = 0.0
             k = 0
             # get the price of the supply
-            while(self.Supplies[k].ID!=self.Products[i].supplies[j] and k<len(self.Supplies)):
+            while(k<len(self.Supplies) and self.Supplies[k].ID!=self.Products[i].supplies[j]):
                 k += 1
             if(k>=len(self.Supplies)):
                 j += 1
@@ -331,7 +301,6 @@ class Button:
                 self.hover = hovered_now
             else:
                 self.hover = False
-
 class SettingsMenu:
     def __init__(self, on_back: Callable[[], None] = None, on_reset: Callable[[], None] = None,
                  initial_values: Dict[str, float] = None):

@@ -111,14 +111,14 @@ class Accuracy_Data:
                 i += 1
             # we have read all the data from the line, now we have to store it
             prodIndex = 0   # I can't be bothered to sort the data right now, so we search the entire list to find which entry we are editing
-            while(prodIndex < len(settings.products)):
-                if(settings.products[prodIndex][0]==product): # we found a matching entry
+            while(prodIndex < len(self.ids)):
+                if(self.ids[prodIndex]==product): # we found a matching entry
                     # price and product details only change once
                     # quantity is the only value that will need updated with every entry
                     self.probabilitySpaces[prodIndex][weekDay][hour] += quantity
                     break
                 prodIndex += 1
-            if(prodIndex==len(settings.products)): # we have a new product that we have not read before
+            if(prodIndex>=len(self.ids)): # we have a new product that we have not read before
                 settings.addProd(product,desc,price)
                 self.probabilitySpaces.append( [[0.0]*15]*7 ) # 7 days in a week, 15 hours a day (6am - 9pm)
                 self.ids.append(product)
@@ -150,8 +150,8 @@ class Accuracy_Data:
         
         # find indexes
         prodIndex = 0
-        while(prodIndex < len(settings.products)):
-            match(settings.products[prodIndex][0]):
+        while(prodIndex < len(self.ids)):
+            match(self.ids[prodIndex]):
                 case 19: # dark chocolate powder
                     darkPowIndex = prodIndex
                 case 20: # organic chocolate powder
@@ -199,9 +199,9 @@ class Accuracy_Data:
         for day in range(7):
             for hour in range(15):
                 total = 0
-                for prod in range(len(settings.products)):
+                for prod in range(len(self.ids)):
                     total += self.probabilitySpaces[prod][day][hour]
-                for prod in range(len(settings.products)):
+                for prod in range(len(self.ids)):
                     self.probabilitySpaces[prod][day][hour] = float(self.probabilitySpaces[prod][day][hour]) / float(total)
         return
     def readSupplyData(self,settings,progressBar):
@@ -261,36 +261,34 @@ class Accuracy_Data:
                         dataLoc += 1
                 i += 1
             # we have read all the data from the line, now we have to store it
-            supIndex = 0   # I can't be bothered to sort the data right now, so we search the entire list to find which entry we are editing
-            while(supIndex < len(settings.supplies)):
-                if(settings.supplies[supIndex][0]==supply): # we found a matching entry
+            supIndex = 0 # the setting might already exist, so we need to search through the list for it first
+            while(supIndex < len(settings.Supplies)):
+                if(settings.Supplies[supIndex].ID==supply): # we found a matching entry
                     if(supplyAmt==1): # update price if we have an exact conversion on this line
                         settings.setSupPrice(supIndex,supplyAmtPrice)
                     break
                 supIndex += 1
-            if(supIndex==len(settings.supplies)): # we have a new supply that we have not read before
+            if(supIndex==len(settings.Supplies)): # we have a new supply that we have not read before
                 settings.addSup(supply)
                 if(supplyAmt==1):
                     settings.setSupPrice(supIndex,supplyAmtPrice)
-            prodIndex = 0
-            while(prodIndex < len(settings.products)): # set the desc of the supply
-                if(settings.products[prodIndex][0]==supply):
-                    settings.setSupDesc(supIndex,settings.products[prodIndex][1])
-                if(supply==84):
-                    settings.setSupDesc(supIndex,"Cup Sm")
-                if(supply==85):
-                    settings.setSupDesc(supIndex,"Cup Rg")
-                if(supply==86):
-                    settings.setSupDesc(supIndex,"Cup Lg")
-                prodIndex += 1
+            # set the supply description
+            if(supply==84):
+                settings.setSupDesc(supply,"Cup Sm")
+            elif(supply==85):
+                settings.setSupDesc(supply,"Cup Rg")
+            elif(supply==86):
+                settings.setSupDesc(supply,"Cup Lg")
+            else:
+                prodIndex = 0
+                while(prodIndex < len(self.ids)):
+                    if(settings.Products[prodIndex].ID==supply):
+                        settings.setSupDesc(supply,settings.Products[prodIndex].name)
+                        break
+                    prodIndex += 1
             # we should have handled the supply entry
             # now we need to update the related product entry
-            prodIndex = 0
-            while(prodIndex < len(settings.products)):
-                if(settings.products[prodIndex][0]==product):
-                    settings.addProdSup(prodIndex,supply,supplyAmt)
-                    break
-                prodIndex += 1
+            settings.addProdSup(product,supply,supplyAmt)
             # update progress bar
             progressBar.update( float(x+1)/float(len(lines)) )
         # always close files after using them

@@ -1,3 +1,5 @@
+import pygame
+
 class SimData:
     def __init__(self):
         # Constructor. Define instance vars here.
@@ -5,20 +7,17 @@ class SimData:
         self.products = []
         self.mouseXY = []
         self.hoverFrame = 20 # 0-20
-    
     class Supply:
         def __init__(self, ID, name):
             self.ID = ID
             self.name = name
             self.history = [] # [price,goalAmounts,orderedAmounts,usedAmounts]
-    
     class Product:
         def __init__(self, ID, name):
             self.ID = ID
             self.name = name
             self.history = [] # [price,sales,supplyCost]
             # Revenue, cost, and profit can all be calculated with sales and supply cost.
-    
     def addSupply(self, ID, name):
         self.supplies.append(self.Supply(ID, name))
     def addProduct(self, ID, name):
