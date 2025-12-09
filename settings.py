@@ -227,10 +227,24 @@ class Settings:
             surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
         else:
             surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
-        #self.supplyScroll += 0.01
-        #if(self.supplyScroll>1):
-        #    self.supplyScroll = 0.0
-        #    self.scrollSelect = not self.scrollSelect
+        # the first list element should be drawn at (5,21)*SCALE
+        # the height of each element is 16*SCALE
+        # there should be a 1*SCALE spacing between elements
+        # each element should be drawn at (5,21+17i)*SCALE where i starts and 0 and increments +1 per element
+        # the scroll bar should modify the height so that the last element is drawn at (5,159)*SCALE when the scroll bar is at the bottom
+        # height of the final element before scrolling is 21 + 17*(len(self.Supplies)-1)
+        # height of the final element after scrolling should be 159
+        # the difference is -138 + 17*(len(self.Supplies)-1)        
+        # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll )
+        # if the height is less then 20 or greater than 160, the element should not be drawn
+        i = 0
+        while(i<len(self.Supplies)):
+            h = 21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll
+            if(self.supplySelect==i and h>=20 and h<=160):
+                surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
+            elif(h>=20 and h<=160):
+                surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
+            i += 1
             
         return self.supplySelect
     def displayProductMenu(self,surface):
@@ -246,10 +260,24 @@ class Settings:
             surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
         else:
             surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
-        #self.productScroll += 0.01
-        #if(self.productScroll>1):
-        #    self.productScroll = 0.0
-        #    self.scrollSelect = not self.scrollSelect
+        # the first list element should be drawn at (5,21)*SCALE
+        # the height of each element is 16*SCALE
+        # there should be a 1*SCALE spacing between elements
+        # each element should be drawn at (5,21+17i)*SCALE where i starts and 0 and increments +1 per element
+        # the scroll bar should modify the height so that the last element is drawn at (5,159)*SCALE when the scroll bar is at the bottom
+        # height of the final element before scrolling is 21 + 17*(len(self.Products)-1)
+        # height of the final element after scrolling should be 159
+        # the difference is -138 + 17*(len(self.Products)-1)        
+        # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll )
+        # if the height is less then 20 or greater than 160, the element should not be drawn
+        i = 0
+        while(i<len(self.Products)):
+            h = 21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll
+            if(self.productSelect==i and h>=20 and h<=160):
+                surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
+            elif(h>=20 and h<=160):
+                surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
+            i += 1
             
         return self.productSelect
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
