@@ -74,8 +74,6 @@ def main():
     mouseDown = False
     
     dataState = 0 # Indicates the state of the data processing. (0 = processing not started, 1 = processing sales data, 2 = processing supply data, 3 = processing done)
-
-    gameState = GameState.gameIntro
     
     salesDataThread = threading.Thread(target=data.readSalesData, args=(settings,progressBar,))   # DO NOT INCLUDE PARENTHESIS ON TARGET FUNCTION    # ARGS MUST BE ITERABLE, INCLUDE EXTRA COMMA FOR ONLY 1 ARG
     supplyDataThread = threading.Thread(target=data.readSupplyData, args=(settings,progressBar,))
@@ -83,6 +81,11 @@ def main():
     # Sound Files
     sounds = {
         "buttonClick": pygame.mixer.Sound("assets/sfx/click.wav")
+    }
+    music = {
+        "mainMenu": "assets/music/main_menu.mp3",
+        "day": "assets/music/day.mp3",
+        "charts": "assets/music/charts.mp3"
     }
     
     # Image Files
@@ -128,17 +131,34 @@ def main():
     # gameProductsMenu
     productStartBtn = pygame.Rect(1023,0,256,64)
     productsTabBtn = pygame.Rect(0,16,251,47)
-
+    
+    # Set initial state.
+    gameState = None
+    previousState = None
+    stateChangeFrame = True # True if state was updated this frame. (Set to true to force update on start.)
+    
+    def changeState(newState):
+        nonlocal gameState, previousState, stateChangeFrame
+        previousState = gameState
+        gameState = newState
+        stateChangeFrame = True
+    
+    def changeMusic(newTrack):
+        pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
+        pygame.mixer.music.load(music[newTrack])
+        pygame.mixer.music.play(-1) # Play with infinite looping.
+    
     def goBackToMain():
         nonlocal gameState
-        gameState = GameState.gameMainMenu
-
+        changeState(GameState.gameMainMenu)
+    
     settingsMenu = st.SettingsMenu(
         on_back = goBackToMain,
         on_reset = None,
         initial_values = None
     )
-
+    
     def volume_sfx_changed(value):
         for name, sound in sounds.items():
             sound.set_volume(value)
@@ -147,12 +167,14 @@ def main():
     def speed_changed(value):
         global simSpeed
         simSpeed = value
-
+    
     settingsMenu.set_external_callbacks(
         volume_sfx_changed,
         volume_music_changed,
         speed_changed
     )
+    
+    changeState(GameState.gameIntro)
 
     while (True):
         mouseXY = pygame.mouse.get_pos()
@@ -166,6 +188,22 @@ def main():
                 pygame.quit()
                 sys.exit()
         
+            if (stateChangeFrame): # State was changed last frame loop.
+                match gameState:
+                    # Intro / Main Menu
+                    case GameState.gameIntro | GameState.gameMainMenu | GameState.gameMenu | GameState.gameSettings:
+                        if (previousState != GameState.gameIntro and previousState != GameState.gameMainMenu and previousState != GameState.gameMenu and previousState != GameState.gameSettings):
+                            changeMusic("mainMenu")
+                    # Supply/Product Menus
+                    case GameState.gameSupplyMenu | GameState.gameProductMenu:
+                        if (previousState != GameState.gameSupplyMenu and previousState != GameState.gameProductMenu):
+                            changeMusic("charts")
+                    # Sim
+                    case GameState.gameSim:
+                        changeMusic("day")
+                stateChangeFrame = False # State has been updated now.
+                        
+        
             # Ongoing game logic here (repeats every 1/FPS second):
             # Button, mouse, or keyboard input logic here, selected by gameState:
             match gameState:
@@ -178,10 +216,10 @@ def main():
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if playBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameMenu
+                            changeState(GameState.gameMenu)
                         elif settingsBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameSettings
+                            changeState(GameState.gameSettings)
                         elif quitBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             pygame.quit()
@@ -192,14 +230,14 @@ def main():
                         if newGameBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.newSim()
-                            gameState = GameState.gameSupplyMenu
+                            changeState(GameState.gameSupplyMenu)
                         elif continueBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim()
-                            gameState = GameState.gameSupplyMenu
+                            changeState(GameState.gameSupplyMenu)
                         elif gameBackBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameMainMenu
+                            changeState(GameState.gameMainMenu)
                 
                 # Supplies Menu
                 case GameState.gameSupplyMenu:
@@ -209,10 +247,10 @@ def main():
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameSim
+                            changeState(GameState.gameSim)
                         elif suppliesTabBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameProductMenu
+                            changeState(GameState.gameProductMenu)
                 
                 # Products Menu
                 case GameState.gameProductMenu:
@@ -222,10 +260,10 @@ def main():
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameSim
+                            changeState(GameState.gameSim)
                         elif productsTabBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
-                            gameState = GameState.gameSupplyMenu
+                            changeState(GameState.gameSupplyMenu)
                 
                 # Settings Menu
                 case gameState.gameSettings:
@@ -238,11 +276,11 @@ def main():
                         if nextDayBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim() # prepare sim for another day
-                            gameState = GameState.gameSupplyMenu
+                            changeState(GameState.gameSupplyMenu)
                         elif endDayQuitBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim()
-                            gameState = GameState.gameMainMenu
+                            changeState(GameState.gameMainMenu)
             # End input logic ------------------
             
         # End event loop ------------------
@@ -294,7 +332,7 @@ def main():
                     progressBar.displayProgress(surface, W*0.15, H*0.90, W*0.70, H*0.06, 5, WHITE, GREEN)
                 if logoFrame > 180 and dataState >= 4:
                     sim.continueSim() # reset sim so demo displays properly
-                    gameState = GameState.gameMainMenu
+                    changeState(GameState.gameMainMenu)
             
             # Main Menu
             case GameState.gameMainMenu:
@@ -396,7 +434,7 @@ def main():
                 
                 if sim.time <= 0:
                     sim.storeInputs([0,0],False) # make sure if player clicks the moment the sim ends, the input is not continuously doing something
-                    gameState = GameState.gameEndDay
+                    changeState(GameState.gameEndDay)
         # End drawing code ------------------
 
         
