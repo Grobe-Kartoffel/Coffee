@@ -98,8 +98,8 @@ def main():
     supplyTab = pygame.transform.scale_by(supplyTab,SCALE)
     productTab = pygame.image.load("assets/graphics/product_tab.png").convert_alpha()
     productTab = pygame.transform.scale_by(productTab,SCALE)
-    btn1 = pygame.image.load("assets/graphics/btn_1.png").convert_alpha()
-    btn1 = pygame.transform.scale_by(btn1,SCALE)
+    mgmtBtn = pygame.image.load("assets/graphics/Mgmt_Btn.png").convert_alpha()
+    mgmtBtn = pygame.transform.scale_by(mgmtBtn,SCALE)
     lst = pygame.image.load("assets/graphics/list.png").convert_alpha()
     lst = pygame.transform.scale_by(lst,SCALE)
     graph = pygame.image.load("assets/graphics/graph.png").convert_alpha()
@@ -334,7 +334,7 @@ def main():
                 mx, my = mouseXY
                 surface.blit(mgmtBg,(0,0))
                 surface.blit(supplyTab,(0,0))
-                surface.blit(btn1,(256*SCALE,0))
+                surface.blit(mgmtBtn,(256*SCALE,0))
                 surface.blit(lst,(3*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,60*SCALE))
                 settings.displaySupplyMenu(surface)
@@ -350,7 +350,7 @@ def main():
                 mx, my = mouseXY
                 surface.blit(mgmtBg,(0,0))
                 surface.blit(productTab,(0,0))
-                surface.blit(btn1,(256*SCALE,0))
+                surface.blit(mgmtBtn,(256*SCALE,0))
                 surface.blit(lst,(3*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,99*SCALE))
