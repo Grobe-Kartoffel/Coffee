@@ -6,7 +6,8 @@ class Settings:
         self.Products = []
         self.Supplies = []
         self.money = 100.0
-        self.mouseXY = []
+        self.mouseXY = [0,0]
+        self.prevMouseXY = [0,0]
         self.lftClkSt = 0
         self.supplyScroll = 0.0
         self.productScroll = 0.0
@@ -187,15 +188,21 @@ class Settings:
             j += 1
         return cost
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
+        self.prevMouseXY = self.mouseXY
         self.mouseXY = MouseXY
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
             self.lftClkSt = 1
+            # check if scroll bar was clicked
+            if(self.mouseXY[0]>=154*self.SCALE and self.mouseXY[0]<158*self.SCALE and self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<176*self.SCALE):
+                self.prevMouseXY = MouseXY
+                self.scrollSelect = True
             return
         if(self.lftClkSt==1 and lftClk): # mouse is held down
             self.lftClkSt = 2
             return
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
+            self.scrollSelect = False
             return    
     def resetObjects(self):
         self.money = 100.0
@@ -209,28 +216,40 @@ class Settings:
         self.productSelect = -1        
     def displaySupplyMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
-        # lowest it can be drawn is (154,160)*SCALE        
+        # lowest it can be drawn is (154,160)*SCALE
         if(self.scrollSelect):
+            h = float(20.0+140.0*self.supplyScroll + (self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE)
+            self.supplyScroll = (h-20.0)/140.0
+            if(self.supplyScroll<0):
+                self.supplyScroll = 0.0
+            if(self.supplyScroll>1):
+                self.supplyScroll = 1.0
             surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
         else:
             surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.supplyScroll)*self.SCALE))
-        self.supplyScroll += 0.01
-        if(self.supplyScroll>1):
-            self.supplyScroll = 0.0
-            self.scrollSelect = not self.scrollSelect
+        #self.supplyScroll += 0.01
+        #if(self.supplyScroll>1):
+        #    self.supplyScroll = 0.0
+        #    self.scrollSelect = not self.scrollSelect
             
         return self.supplySelect
     def displayProductMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
         # lowest it can be drawn is (154,160)*SCALE        
         if(self.scrollSelect):
+            h = float(20.0+140.0*self.productScroll + (self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE)
+            self.productScroll = (h-20.0)/140.0
+            if(self.productScroll<0):
+                self.productScroll = 0.0
+            if(self.productScroll>1):
+                self.productScroll = 1.0            
             surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
         else:
             surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
-        self.productScroll += 0.01
-        if(self.productScroll>1):
-            self.productScroll = 0.0
-            self.scrollSelect = not self.scrollSelect
+        #self.productScroll += 0.01
+        #if(self.productScroll>1):
+        #    self.productScroll = 0.0
+        #    self.scrollSelect = not self.scrollSelect
             
         return self.productSelect
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
