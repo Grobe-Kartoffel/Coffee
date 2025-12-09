@@ -4,7 +4,7 @@ from enum import IntEnum
 from abc import ABC, abstractmethod # Not sure why abstract classes need to be imported like this, but they do.
 
 # Import class files. IDE might complain that the file cannot be found, but it will still work.
-import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm
+import progress_manager as pm, accuracy_data as ac, settings as st, sim as sm, sim_data as sd
 
 
 # "Button Animation" gives buttons border and a highlight
@@ -66,6 +66,7 @@ def main():
     settings = st.Settings()
     sim = sm.Sim(surface,SCALE)
     sim.acDataRef = data
+    simData = sd.SimData()
     
     mouseXY = [0,0]
     mouseDown = False
@@ -200,9 +201,9 @@ def main():
                 
                 # Supplies Menu
                 case GameState.gameSupplyMenu:
-                    settings.mouseXY = mouseXY
-                    settings.mouseDown = mouseDown
-
+                    #settings.mouseXY = mouseXY
+                    #settings.mouseDown = mouseDown
+                    settings.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if supplyStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
@@ -213,9 +214,9 @@ def main():
                 
                 # Products Menu
                 case GameState.gameProductMenu:
-                    settings.mouseXY = mouseXY
-                    settings.mouseDown = mouseDown
-
+                    #settings.mouseXY = mouseXY
+                    #settings.mouseDown = mouseDown
+                    settings.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if productStartBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
@@ -230,6 +231,7 @@ def main():
                 
                 # End-of-Day Menu
                 case GameState.gameEndDay:
+                    simData.storeInputs(mouseXY,mouseDown)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if nextDayBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
@@ -337,7 +339,8 @@ def main():
                 surface.blit(mgmtBtn,(256*SCALE,0))
                 surface.blit(lst,(3*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,60*SCALE))
-                settings.displaySupplyMenu(surface)
+                ID = settings.displaySupplyMenu(surface)
+                simData.drawSupplyGraph(ID)
                 
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
@@ -354,7 +357,9 @@ def main():
                 surface.blit(lst,(3*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,99*SCALE))
-                settings.displayProductMenu(surface)
+                ID = settings.displayProductMenu(surface)
+                simData.drawRevenueGraph(ID)
+                simData.drawSalesGraph(ID)
                 
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
@@ -371,18 +376,17 @@ def main():
 
             # End-of-Day Menu
             case GameState.gameEndDay:
+                mx, my = mouseXY
                 sim.runSim()
                 surface.blit(endDayBg, (0,0))
+                simData.drawEndOfDayGraph()
 
-                mx, my = mouseXY
                 if nextDayBtn.collidepoint(mx, my):
                     draw_button_glow(surface, nextDayBtn)
                     draw_button_outline(surface, nextDayBtn)
-
                 if endDayQuitBtn.collidepoint(mx, my):
                     draw_button_glow(surface, endDayQuitBtn)
                     draw_button_outline(surface, endDayQuitBtn)
-            
             # Sim
             case GameState.gameSim:
                 sim.storeInputs(mouseXY, mouseDown)

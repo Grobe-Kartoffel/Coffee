@@ -6,6 +6,7 @@ class SimData:
         self.supplies = []
         self.products = []
         self.mouseXY = []
+        self.lftClkSt = 0
         self.hoverFrame = 20 # 0-20
     class Supply:
         def __init__(self, ID, name):

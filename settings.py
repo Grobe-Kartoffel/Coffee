@@ -6,6 +6,8 @@ class Settings:
         self.Products = []
         self.Supplies = []
         self.money = 100.0
+        self.mouseXY = []
+        self.lftClkSt = 0
         self.lock = threading.Lock()
     class Supply:
         def __init__(self,ID):
@@ -119,10 +121,21 @@ class Settings:
             # increment J
             j += 1
         return cost
+    def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
+        self.mouseXY = MouseXY
+        if(self.lftClkSt==0 and lftClk): # mouse was clicked
+            self.lftClkSt = 1
+            return
+        if(self.lftClkSt==1 and lftClk): # mouse is held down
+            self.lftClkSt = 2
+            return
+        if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
+            self.lftClkSt = 0
+            return    
     def displaySupplyMenu(self,surface):
-        pass
+        return -1
     def displayProductMenu(self,surface):
-        pass
+        return -1
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
 def clamp(v, a, b):
     return max(a, min(b, v))
