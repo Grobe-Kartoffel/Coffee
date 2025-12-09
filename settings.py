@@ -1,9 +1,6 @@
 import threading, pygame
 from typing import Callable, Tuple, Dict
 
-# TO DO:
-# Supplies of ID 21 and onward are missing their price
-
 class Settings:
     def __init__(self,SCALE):
         self.Products = []

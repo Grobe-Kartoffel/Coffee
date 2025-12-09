@@ -304,9 +304,9 @@ def main():
         if(progressBar.Value>=1.0 and dataState==2): # Sales and supply data processed successfully.
             supplyDataThread.join()
             dataState = 3 # indicate data is done processing
-        if(dataState==3):  # Used for debug.
+        # Used for debug
+        if(dataState==3):
             dataState += 1
-            print(settings)
         # Intro logo logic
         if(dataState>0 and logoFrame<=LOGO_FRAME_TOTAL):
             logoFrame += 1

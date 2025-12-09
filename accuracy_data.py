@@ -237,7 +237,7 @@ class Accuracy_Data:
             line = lines[x]
             if(x==0):       # skip the header
                 continue
-            while( i < len(line)):
+            while( i < len(line)-1):
                 match(dataLoc):
                     case 0: # product id
                         while(line[i]!='|'):
@@ -261,17 +261,17 @@ class Accuracy_Data:
                         dataLoc += 1
                 i += 1
             # we have read all the data from the line, now we have to store it
-            supIndex = 0 # the setting might already exist, so we need to search through the list for it first
+            supIndex = 0 # the supply might already exist, so we need to search through the list for it first
             while(supIndex < len(settings.Supplies)):
                 if(settings.Supplies[supIndex].ID==supply): # we found a matching entry
                     if(supplyAmt==1): # update price if we have an exact conversion on this line
-                        settings.setSupPrice(supIndex,supplyAmtPrice)
+                        settings.setSupPrice(supply,supplyAmtPrice)
                     break
                 supIndex += 1
             if(supIndex==len(settings.Supplies)): # we have a new supply that we have not read before
                 settings.addSup(supply)
                 if(supplyAmt==1):
-                    settings.setSupPrice(supIndex,supplyAmtPrice)
+                    settings.setSupPrice(supply,supplyAmtPrice)
             # set the supply description
             if(supply==84):
                 settings.setSupDesc(supply,"Cup Sm")
