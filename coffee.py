@@ -64,9 +64,11 @@ def main():
     data = ac.Accuracy_Data()              # create class objects
     progressBar = pm.Progress_Manager()
     settings = st.Settings()
+    simData = sd.SimData()
     sim = sm.Sim(surface,SCALE)
     sim.acDataRef = data
-    simData = sd.SimData()
+    sim.settingsRef = settings
+    sim.simDataRef = simData
     
     mouseXY = [0,0]
     mouseDown = False

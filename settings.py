@@ -8,6 +8,10 @@ class Settings:
         self.money = 100.0
         self.mouseXY = []
         self.lftClkSt = 0
+        self.supplyScroll = 0.0
+        self.productScroll = 0.0
+        self.supplySelect = -1
+        self.productSelect = -1
         self.lock = threading.Lock()
     class Supply:
         def __init__(self,ID):
@@ -132,10 +136,20 @@ class Settings:
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
             return    
+    def resetObjects(self):
+        self.money = 100.0
+        for s in self.Supplies:
+            s.amt = 100.0
+            s.goalAmt = 100.0
+    def resetMenus(self):
+        self.supplyScroll = 0.0
+        self.productScroll = 0.0
+        self.supplySelect = -1
+        self.productSelect = -1        
     def displaySupplyMenu(self,surface):
-        return -1
+        return self.supplySelect
     def displayProductMenu(self,surface):
-        return -1
+        return self.productSelect
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
 def clamp(v, a, b):
     return max(a, min(b, v))

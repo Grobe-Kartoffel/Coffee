@@ -28,6 +28,8 @@ class Sim:
         self.demoStarted = False    # (Used to determine the first simulation frame.)
         # class references
         self.acDataRef = None
+        self.settingsRef = None
+        self.simDataRef = None
         
         # Load Image Assets as Surfaces ------------------------------------
         # Floorplan:
@@ -1018,8 +1020,14 @@ class Sim:
     
     def newSim(self): # Resets sim and sim data in preparation for a new game
         # code to reset all save data
+        # for now, just reset money and supply amounts/goals, product prices should ideally be reset as well
+        # call reset objects in settings
+        self.settingsRef.resetObjects()
+        # call erase history in sim_data
+        self.simDataRef.eraseHistory()
+        # prepare to run the sim again
         self.continueSim()
-    
+        
     def continueSim(self): # Prepares sim for a new day
         # delete all customers
         while(len(self.customers)>0):
@@ -1043,7 +1051,9 @@ class Sim:
         self.time = self.maxTime
         self.points = 0
         self.profit = 0.00
-    
+        
+        # reset supply/product menus in settings
+        self.settingsRef.resetMenus()
     def runSim(self):
         # handle customers
         i = 0
