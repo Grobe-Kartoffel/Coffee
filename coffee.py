@@ -339,16 +339,16 @@ def main():
 
                 mx, my = mouseXY
                 if playBtn.collidepoint(mx, my):
-                     draw_button_glow(surface, playBtn)
-                     draw_button_outline(surface, playBtn)
+                    draw_button_glow(surface, playBtn)
+                    draw_button_outline(surface, playBtn)
 
                 if settingsBtn.collidepoint(mx, my):
                      draw_button_glow(surface, settingsBtn)
                      draw_button_outline(surface, settingsBtn)
 
                 if quitBtn.collidepoint(mx, my):
-                     draw_button_glow(surface, quitBtn)
-                     draw_button_outline(surface, quitBtn)    
+                    draw_button_glow(surface, quitBtn)
+                    draw_button_outline(surface, quitBtn)    
             
             # -TODO-
             case GameState.gameMenu:
