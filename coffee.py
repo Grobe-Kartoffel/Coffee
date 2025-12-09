@@ -92,8 +92,18 @@ def main():
     settingsMenuBg = pygame.image.load("assets/graphics/Settings.png").convert_alpha()
     endDayBg = pygame.image.load("assets/graphics/EndofDay Menu.png").convert_alpha()
     gameMenuBg = pygame.image.load("assets/graphics/Game Menu.png").convert_alpha()
-    productMenubg = pygame.image.load("assets/graphics/Product Menu.png").convert_alpha()
-    supplyMenubg = pygame.image.load("assets/graphics/Supply Menu.png").convert_alpha()
+    mgmtBg = pygame.image.load("assets/graphics/Mgmt_Bg.png").convert_alpha()
+    mgmtBg = pygame.transform.scale_by(mgmtBg,SCALE)
+    supplyTab = pygame.image.load("assets/graphics/supply_tab.png").convert_alpha()
+    supplyTab = pygame.transform.scale_by(supplyTab,SCALE)
+    productTab = pygame.image.load("assets/graphics/product_tab.png").convert_alpha()
+    productTab = pygame.transform.scale_by(productTab,SCALE)
+    btn1 = pygame.image.load("assets/graphics/btn_1.png").convert_alpha()
+    btn1 = pygame.transform.scale_by(btn1,SCALE)
+    lst = pygame.image.load("assets/graphics/list.png").convert_alpha()
+    lst = pygame.transform.scale_by(lst,SCALE)
+    graph = pygame.image.load("assets/graphics/graph.png").convert_alpha()
+    graph = pygame.transform.scale_by(graph,SCALE)
 
     # mainMenu
     playBtn = pygame.Rect(512, 276, 256, 64)
@@ -179,11 +189,11 @@ def main():
                         if newGameBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.newSim()
-                            gameState = GameState.gameProductMenu
+                            gameState = GameState.gameSupplyMenu
                         elif continueBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim()
-                            gameState = GameState.gameProductMenu
+                            gameState = GameState.gameSupplyMenu
                         elif gameBackBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             gameState = GameState.gameMainMenu
@@ -224,7 +234,7 @@ def main():
                         if nextDayBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim() # prepare sim for another day
-                            gameState = GameState.gameProductMenu
+                            gameState = GameState.gameSupplyMenu
                         elif endDayQuitBtn.collidepoint(mouseXY):
                             sounds["buttonClick"].play()
                             sim.continueSim()
@@ -255,10 +265,7 @@ def main():
             supplyDataThread.join()
             dataState = 3 # indicate data is done processing
         if(dataState==3):  # Used for debug.
-            # print(settings)
-            # print(data)
             dataState += 1
-            # return
         # Intro logo logic
         if(dataState>0 and logoFrame<=LOGO_FRAME_TOTAL):
             logoFrame += 1
@@ -324,40 +331,37 @@ def main():
             # TODO: Supplies and Products Tab Buttons outlines need changed to fit shape 
             # Supplies Menu
             case GameState.gameSupplyMenu:
-                surface.blit(supplyMenubg, (0,0))
-                
                 mx, my = mouseXY
+                surface.blit(mgmtBg,(0,0))
+                surface.blit(supplyTab,(0,0))
+                surface.blit(btn1,(256*SCALE,0))
+                surface.blit(lst,(3*SCALE,19*SCALE))
+                surface.blit(graph,(161*SCALE,60*SCALE))
+                settings.displaySupplyMenu(surface)
+                
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
                     draw_button_outline(surface, supplyStartBtn)
-
                 if suppliesTabBtn.collidepoint(mx, my):
                     draw_button_glow(surface, suppliesTabBtn)
                     draw_button_outline(surface, suppliesTabBtn)
-
-                if hasattr(settings, "displaySupplyMenu"):
-                    settings.displaySupplyMenu(surface)
-                # if hasattr(simData, "drawSupplyGraph"):
-                #     simData.drawSupplyGraph(-1, surface)
-            
             # Products Menu
             case GameState.gameProductMenu:
-                surface.blit(productMenubg, (0,0))
-
                 mx, my = mouseXY
+                surface.blit(mgmtBg,(0,0))
+                surface.blit(productTab,(0,0))
+                surface.blit(btn1,(256*SCALE,0))
+                surface.blit(lst,(3*SCALE,19*SCALE))
+                surface.blit(graph,(161*SCALE,19*SCALE))
+                surface.blit(graph,(161*SCALE,99*SCALE))
+                settings.displayProductMenu(surface)
+                
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
                     draw_button_outline(surface, supplyStartBtn)
-
                 if productsTabBtn.collidepoint(mx, my):
                     draw_button_glow(surface, productsTabBtn)
                     draw_button_outline(surface, productsTabBtn)
-
-                if hasattr(settings, "displayProductMenu"):
-                    settings.displayProductMenu(surface)
-                # if hasattr(simData, "drawProductGraph"):
-                #     simData.drawProductGraph(-1, surface)
-            
             # Settings Menu
             case GameState.gameSettings:
                 #surface.blit(settingsMenuBg, (0,0))

@@ -119,6 +119,10 @@ class Settings:
             # increment J
             j += 1
         return cost
+    def displaySupplyMenu(self,surface):
+        pass
+    def displayProductMenu(self,surface):
+        pass
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
 def clamp(v, a, b):
     return max(a, min(b, v))
