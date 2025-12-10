@@ -14,7 +14,8 @@ class Settings:
         self.supplySelect = -1
         self.productSelect = -1
         self.scrollSelect = False
-        self.sliderSelect = -1
+        self.supplySliderSelect = -1
+        self.productSliderSelect = -1
         self.lock = threading.Lock()
         # image files
         self.SCALE = SCALE
@@ -202,8 +203,40 @@ class Settings:
             self.lftClkSt = 1
             # check if scroll bar was clicked
             if(self.mouseXY[0]>=154*self.SCALE and self.mouseXY[0]<158*self.SCALE and self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<176*self.SCALE):
-                self.prevMouseXY = MouseXY
                 self.scrollSelect = True
+            # check if list element was clicked
+            if(self.mouseXY[0]<4*self.SCALE or self.mouseXY[0]>159*self.SCALE or self.mouseXY[1]<20*self.SCALE or self.mouseXY[1]>176*self.SCALE):
+                self.supplySelect = -1
+                self.productSelect = -1
+                self.supplySliderSelect = -1
+                self.productSliderSelect = -1
+            else: # something was clicked, we need to figure out what, it's easiest to do this for both supplies and products
+                # as the list is scrolled up, the mouse should be offset down
+                # then, the mouse height, minus twenty, should be integer divided by 17 to find the index of the element to be selected
+                # then, the mouse height, minus twenty, should be modulus divided by 17, and if the height is between 9 and 15, then we should check the width to see if the slider knob was clicked
+                # code for supply list
+                h = self.mouseXY[1]/self.SCALE - (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll # the offset equation is without scaling, so the mouse location needs to have the scale removed as well
+                hi = int(float(h-20)/17.0)
+                hm = int(h-20)%17
+                self.supplySelect = self.Supplies[hi].ID
+                # reverse engineer the location of the slider and see if the mouse width is within 6*SCALE units of it
+                w = (27+108*(self.Supplies[hi].goalAmt/200))*self.SCALE
+                if(hm>=9 and hm<=15 and self.mouseXY[0]>=w and self.mouseXY[0]<=w+6*self.SCALE): # the slider was potentially clicked
+                    self.supplySliderSelect = self.Supplies[hi].ID
+                else:
+                    self.supplySliderSelect = -1
+                # code for product list
+                h = self.mouseXY[1]/self.SCALE - (138 - 17*(len(self.Supplies)-1) )*self.productScroll # the offset equation is without scaling, so the mouse location needs to have the scale removed as well
+                hi = int(float(h-20)/17.0)
+                hm = int(h-20)%17
+                self.productSelect = self.Products[hi].ID     
+                # reverse engineer the location of the slider and see if the mouse width is within 6*SCALE units of it
+                w = (27+108*(self.Products[hi].price/50.0))*self.SCALE                
+                if(hm>=9 and hm<=15 and self.mouseXY[0]>=w and self.mouseXY[0]<=w+6*self.SCALE): # the slider was potentially clicked
+                    self.productSliderSelect = self.Products[hi].ID
+                else:
+                    self.productSliderSelect = -1                
+                
             return
         if(self.lftClkSt==1 and lftClk): # mouse is held down
             self.lftClkSt = 2
@@ -211,6 +244,8 @@ class Settings:
         if(self.lftClkSt>0 and not lftClk): # mouse was unclicked
             self.lftClkSt = 0
             self.scrollSelect = False
+            self.supplySliderSelect = -1
+            self.productSliderSelect = -1
             return    
     def resetObjects(self):
         self.money = 100.0
@@ -221,7 +256,9 @@ class Settings:
         self.supplyScroll = 0.0
         self.productScroll = 0.0
         self.supplySelect = -1
-        self.productSelect = -1        
+        self.productSelect = -1
+        self.supplySliderSelect = -1
+        self.productSliderSelect = -1
     def getObjImage(self,ID):
         img = None
         if(ID==81):
@@ -259,7 +296,8 @@ class Settings:
         # highest the scroll bar can be drawn is (154,20)*SCALE
         # lowest it can be drawn is (154,160)*SCALE
         if(self.scrollSelect):
-            h = float(20.0+140.0*self.supplyScroll + (self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE)
+            # also make sure mouse does not push scroll bar from afar if it goes out of bounds            
+            h = float(20.0+140.0*self.supplyScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
             self.supplyScroll = (h-20.0)/140.0
             if(self.supplyScroll<0):
                 self.supplyScroll = 0.0
@@ -285,24 +323,46 @@ class Settings:
             if(h<20 or h>160):
                 i += 1
                 continue
-            if(self.supplySelect==i):
+            if(self.supplySelect==self.Supplies[i].ID):
                 surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
             else:
                 surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
             # icons should be displayed at (7,24)*SCALE, plus the height offset of the element it cooresponds to
             img = self.getObjImage(self.Supplies[i].ID)
             surface.blit(img, (7*self.SCALE, (h+3)*self.SCALE ))
+            # the slider knob should be displayed at height 30*SCALE plus the height offset of the element it cooresponds to
+            # the slider knob should be displayed at width (27 + 108*Value/Max)*SCALE
+            if(self.supplySliderSelect==self.Supplies[i].ID):
+                # find the new location based on how much the mouse dragged
+                # also make sure mouse does not push knob from afar if it goes out of bounds
+                w = (27+108*(self.Supplies[i].goalAmt/200))*self.SCALE + ((self.mouseXY[0]-self.prevMouseXY[0]) if (self.mouseXY[0]>=27*self.SCALE and self.mouseXY[0]<=141*self.SCALE) else 0 )
+                # don't let it go out of bounds
+                if(w<27*self.SCALE):
+                    w = 27*self.SCALE
+                if(w>135*self.SCALE):
+                    w = 135*self.SCALE
+                # reverse engineer the new price
+                self.Supplies[i].goalAmt = (((w/self.SCALE)-27)/108)*200
+                # display the knob                
+                surface.blit(self.sldrKnbHigh, ((27+108*(self.Supplies[i].goalAmt/200))*self.SCALE,(h+9)*self.SCALE) )
+            else:
+                surface.blit(self.sldrKnbLow, ((27+108*(self.Supplies[i].goalAmt/200))*self.SCALE,(h+9)*self.SCALE) )
             # text should be displayed at (28,23)*SCALE plus the height offset of the element it cooresponds to
-            text = font.render(str(self.Supplies[i].name),True,(0,0,0))
-            surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])            
+            if(self.supplySliderSelect==self.Supplies[i].ID):
+                s = f"Stock Amount: {self.Supplies[i].goalAmt:.0f}"
+                text = font.render(s,True,(0,0,0))
+                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])                
+            else:
+                text = font.render(str(self.Supplies[i].name),True,(0,0,0))
+                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])
             i += 1
-        
         return self.supplySelect
     def displayProductMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
         # lowest it can be drawn is (154,160)*SCALE        
         if(self.scrollSelect):
-            h = float(20.0+140.0*self.productScroll + (self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE)
+            # also make sure mouse does not push scroll bar from afar if it goes out of bounds            
+            h = float(20.0+140.0*self.supplyScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
             self.productScroll = (h-20.0)/140.0
             if(self.productScroll<0):
                 self.productScroll = 0.0
@@ -328,18 +388,39 @@ class Settings:
             if(h<20 or h>160):
                 i += 1
                 continue            
-            if(self.productSelect==i):
+            if(self.productSelect==self.Products[i].ID):
                 surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
             else:
                 surface.blit(self.itemLow, (5*self.SCALE, h*self.SCALE ))
             # icons should be displayed at (7,24)*SCALE, plus the height offset of the element is cooresponds to
             img = self.getObjImage(self.Products[i].ID)
             surface.blit(img, (7*self.SCALE, (h+3)*self.SCALE ))
+            # the slider knob should be displayed at height 30*SCALE plus the height offset of the element it cooresponds to
+            # the slider knob should be displayed at width (27 + 108*Value/Max)*SCALE
+            if(self.productSliderSelect==self.Products[i].ID):
+                # find the new location based on how much the mouse dragged
+                # also make sure mouse does not push knob from afar if it goes out of bounds
+                w = (27+108*(self.Products[i].price/50.0))*self.SCALE + ((self.mouseXY[0]-self.prevMouseXY[0]) if (self.mouseXY[0]>=27*self.SCALE and self.mouseXY[0]<=141*self.SCALE) else 0 )
+                # don't let it go out of bounds
+                if(w<27*self.SCALE):
+                    w = 27*self.SCALE
+                if(w>135*self.SCALE):
+                    w = 135*self.SCALE
+                # reverse engineer the new price
+                self.Products[i].price = (((w/self.SCALE)-27)/108)*50.0
+                # display the knob
+                surface.blit(self.sldrKnbHigh, ((27+108*(self.Products[i].price/50.0))*self.SCALE,(h+9)*self.SCALE) )
+            else:
+                surface.blit(self.sldrKnbLow, ((27+108*(self.Products[i].price/50.0))*self.SCALE,(h+9)*self.SCALE) )
             # text should be displayed at (28,23)*SCALE plus the height offset of the element it cooresponds to
-            text = font.render(str(self.Products[i].name),True,(0,0,0))
-            surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])            
+            if(self.productSliderSelect==self.Products[i].ID):
+                s = f"Price: {self.Products[i].price:.2f}"
+                text = font.render(s,True,(0,0,0))
+                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])                
+            else:
+                text = font.render(str(self.Products[i].name),True,(0,0,0))
+                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])
             i += 1
-            
         return self.productSelect
 # settings menu: In this menu you will get Volume,Music,Game speed Sliders and you be able to reset or go back to the game.
 def clamp(v, a, b):
