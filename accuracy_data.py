@@ -40,7 +40,7 @@ class Accuracy_Data:
         lines = []              # contains all lines of data within the file
         dataLoc = 0             # indicates which piece of data we are in, within a line
         
-        filename = "SalesData_Sorted.csv"
+        filename = "SalesData_Sorted_Renamed.csv"
         try: # make sure the file exists before we start reading
             salesFile = open(filename, "r")
             salesFile.close()
@@ -131,12 +131,12 @@ class Accuracy_Data:
         # ratios of the popularities of chili mayan chocolate powder to other chocolate powders will be used to extrapolate chili mayan hot chocolate popularity from other hot chocolate drinks
         
         # initialize Chili Mayan Hot Chocolate Rg
-        settings.addProd(62,"Drinking Chocolate|Hot chocolate|Chili Mayan Rg",4.75)
+        settings.addProd(62,"Chili Mayan Regular Hot Chocolate",4.75)
         self.probabilitySpaces.append( [[0.0]*15]*7 )
         self.ids.append(62)
         
         # initialize Chili Mayan Hot Chocolate Lg
-        settings.addProd(63,"Drinking Chocolate|Hot chocolate|Chili Mayan Lg",6.25)
+        settings.addProd(63,"Chili Mayan Large Hot Chocolate",6.25)
         self.probabilitySpaces.append( [[0.0]*15]*7 )
         self.ids.append(63)
         

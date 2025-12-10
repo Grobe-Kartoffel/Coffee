@@ -279,7 +279,7 @@ class Settings:
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
-        font = pygame.font.SysFont(None,40)
+        font = pygame.font.SysFont(None,36)
         while(i<len(self.Supplies)):
             h = 21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll
             if(h<20 or h>160):
@@ -322,7 +322,7 @@ class Settings:
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
-        font = pygame.font.SysFont(None,40)
+        font = pygame.font.SysFont(None,36)
         while(i<len(self.Products)):
             h = 21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll
             if(h<20 or h>160):
