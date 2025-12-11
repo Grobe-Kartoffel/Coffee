@@ -1039,7 +1039,7 @@ class Sim:
         self.simDataRef.eraseHistory()
         # add one day of history so the graphs can display something
         for s in self.simDataRef.supplies:
-            s.history.append([self.settingsRef.getSupPrice(s.ID),self.settingsRef.getSupGoal(s.ID),0,0])
+            s.history.append([self.settingsRef.getSupPrice(s.ID),self.settingsRef.getSupGoal(s.ID),0,0,self.settingsRef.getSupGoal(s.ID)])
         for p in self.simDataRef.products:
             p.history.append([self.settingsRef.getProdPrice(p.ID),0,self.settingsRef.getProdSupCost(p.ID)])
         # prepare to run the sim again
@@ -1833,7 +1833,7 @@ class Sim:
         self.draw(True)
         if(self.time>0):
             self.time -= 1
-        if(self.time<=0): # compile and send the day's data to simData
+        if(self.time==0): # compile and send the day's data to simData
             # price, goal amounts, and ordered amounts for supplies need to be obtained at the start of a simulated day
                 # used amounts for each supply need to be tracked throughout the day as products are ordered
                 # if there is not enough of a supply for a product, the customer should be turned away when they are clicked
@@ -1841,11 +1841,12 @@ class Sim:
                 # sales for products need to be tracked throughout the day as they are ordered
             # at the end of the day, these values need to be compiled and reported as new history entries in SimData
             for s in self.supplies:
-                self.simDataRef.addSupplyHistory(s[0],s[1],s[2],s[3],s[5])
+                self.simDataRef.addSupplyHistory(s[0],s[1],s[2],s[3],s[5],s[4])
                 self.settingsRef.useSupply(s[0],s[5])
             for p in self.products:
                 self.simDataRef.addProductHistory(p[0],p[1],p[2],self.settingsRef.getProdSupCost(p[0]))
                 self.settingsRef.earnMoney(p[1]*p[2])
+            self.time = -1
     def orderProduct(self,ID):
         # when a product is ordered, the list of supplies and their amounts need to be retrieved from Settings
             # check each supply amount against the amount of supplies available that day (this amount should be tracked)

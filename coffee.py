@@ -16,7 +16,6 @@ def draw_button_glow(surface, rect, alpha=35):
     pygame.draw.rect(glow_surf, (255, 255, 255, alpha), (0, 0, rect.w, rect.h))
     surface.blit(glow_surf, rect.topleft)
 
-
 # Game States
 class GameState(IntEnum):
     gameIntro = 0
@@ -183,12 +182,14 @@ def main():
         match gameState:
             case GameState.gameSupplyMenu:
                 settings.storeInputs(mouseXY,mouseDown)
+                simData.storeInputs(mouseXY)
             case GameState.gameProductMenu:
                 settings.storeInputs(mouseXY,mouseDown)
+                simData.storeInputs(mouseXY)
             case GameState.gameSettings:
                 settingsMenu.store_inputs(mouseXY, mouseDown)   
             case GameState.gameEndDay:
-                simData.storeInputs(mouseXY,mouseDown)
+                simData.storeInputs(mouseXY)
 
         # Captures state of the game - loops thru changes:
         for event in pygame.event.get():
@@ -312,7 +313,6 @@ def main():
             logoFrame += 1
         # End data processing logic ------------------
         
-        
         # Drawing code goes here, selected by gameState:
         #Set background color
         surface.fill(BLACK)
@@ -379,7 +379,7 @@ def main():
                 surface.blit(lst,(3*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,60*SCALE))
                 ID = settings.displaySupplyMenu(surface)
-                simData.drawSupplyGraph(ID)
+                simData.drawSupplyGraph(ID,surface,SCALE)
                 
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
@@ -397,8 +397,8 @@ def main():
                 surface.blit(graph,(161*SCALE,19*SCALE))
                 surface.blit(graph,(161*SCALE,99*SCALE))
                 ID = settings.displayProductMenu(surface)
-                simData.drawRevenueGraph(ID)
-                simData.drawSalesGraph(ID)
+                simData.drawRevenueGraph(ID,surface,SCALE)
+                simData.drawSalesGraph(ID,surface,SCALE)
                 
                 if supplyStartBtn.collidepoint(mx, my):
                     draw_button_glow(surface, supplyStartBtn)
@@ -408,7 +408,6 @@ def main():
                     draw_button_outline(surface, productsTabBtn)
             # Settings Menu
             case GameState.gameSettings:
-                #surface.blit(settingsMenuBg, (0,0))
                 sim.demoSim()
                 settingsMenu.update()
                 settingsMenu.draw(surface)
@@ -418,7 +417,7 @@ def main():
                 mx, my = mouseXY
                 sim.runSim()
                 surface.blit(endDayBg, (0,0))
-                simData.drawEndOfDayGraph()
+                simData.drawEndOfDayGraph(surface,SCALE)
 
                 if nextDayBtn.collidepoint(mx, my):
                     draw_button_glow(surface, nextDayBtn)
@@ -436,7 +435,6 @@ def main():
                     changeState(GameState.gameEndDay)
         # End drawing code ------------------
 
-        
         pygame.display.update()                        # Updates the screen
         clock.tick(FPS)                                  # Waits for the remaining time of the current frame
         
