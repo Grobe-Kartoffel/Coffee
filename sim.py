@@ -1,10 +1,11 @@
-# TO DO:
-# back counter and tables need to be extended down by 1-2 pixels to make room for objects to sit properly
-
 import random, pygame
 # IDE may complain that functions from class references from other files aren't defined
 # the program will work anyway
 
+# TO DO
+# stocks of supplies seem to immediately run out on the second day of having a goal amount of 0
+    # I suspect order of operations with ContinueSim and the management screens could be an issue
+    # can't really troubleshoot until graphs are working
 class Sim:
     # movement speed will be 1 pixel per frame, or just under 1 unit of space per second
     def __init__(self,surface,SCALE):
@@ -30,6 +31,9 @@ class Sim:
         self.acDataRef = None
         self.settingsRef = None
         self.simDataRef = None
+        # during-sim prod/supply trackers
+        self.supplies = [] # [supplies[ID, price, goal amount, ordered amount, current amount, used amount] ]
+        self.products = [] # [products[ID, price, sales, [supplies[ID,amount]] ] ]
         
         # Load Image Assets as Surfaces ------------------------------------
         # Floorplan:
@@ -260,7 +264,6 @@ class Sim:
             self.order = order
             self.task = task
             self.patience = 620 # Max customer waiting time in ticks - 620 = 10.33 seconds at 60FPS (0.33 for 20-tick order animation).
-    
     class Obj:
         def __init__(self,ID,loc):
             self.ID = ID
@@ -1023,11 +1026,24 @@ class Sim:
         # for now, just reset money and supply amounts/goals, product prices should ideally be reset as well
         # call reset objects in settings
         self.settingsRef.resetObjects()
+        # build objects lists in simData if they don't exist
+        if(len(self.simDataRef.supplies)==0):
+            sups = self.settingsRef.getSups()
+            for s in sups:
+                self.simDataRef.addSupply(s[0],s[1])
+        if(len(self.simDataRef.products)==0):
+            prods = self.settingsRef.getProds()
+            for p in prods:
+                self.simDataRef.addProduct(p[0],p[1])
         # call erase history in sim_data
         self.simDataRef.eraseHistory()
+        # add one day of history so the graphs can display something
+        for s in self.simDataRef.supplies:
+            s.history.append([self.settingsRef.getSupPrice(s.ID),self.settingsRef.getSupGoal(s.ID),0,0])
+        for p in self.simDataRef.products:
+            p.history.append([self.settingsRef.getProdPrice(p.ID),0,self.settingsRef.getProdSupCost(p.ID)])
         # prepare to run the sim again
         self.continueSim()
-        
     def continueSim(self): # Prepares sim for a new day
         # delete all customers
         while(len(self.customers)>0):
@@ -1054,6 +1070,30 @@ class Sim:
         
         # reset supply/product menus in settings
         self.settingsRef.resetMenus()
+        
+        # grab supply/product information needed for the day
+        self.supplies = []
+        self.products = []
+        lst = self.settingsRef.getSups()
+        ID = 0
+        price = 0
+        goal = 0
+        ordered, current = 0,0
+        used = 0
+        for s in lst:
+            ID = s[0]
+            price = self.settingsRef.getSupPrice(ID)
+            goal = self.settingsRef.getSupGoal(ID)
+            ordered, current = self.settingsRef.orderSupply(ID)
+            used = 0            
+            self.supplies.append([ID,price,goal,ordered,current,used])
+        lst = self.settingsRef.getProds()
+        for p in lst:
+            ID = p[0]
+            price = self.settingsRef.getProdPrice(ID)
+            ordered = 0 # sales, but reusing a variable
+            pSups = self.settingsRef.getProdSups(ID)
+            self.products.append([ID,price,ordered,pSups])
     def runSim(self):
         # handle customers
         i = 0
@@ -1128,9 +1168,13 @@ class Sim:
                     if(self.mouseXY[0]==7 and self.mouseXY[1]==3 and self.lftClkSt==1):
                         for e in self.employees:
                             if(e.job==0 and e.task==0 and e.loc[0]==5 and e.loc[1]==4):
-                                unit.task += 1
-                                unit.dir = 3
-                                self.points += int((float(unit.patience)/600.0)*self.pointMax)
+                                # see if we can order the product
+                                if(self.orderProduct(unit.order)):
+                                    unit.task += 1
+                                    unit.dir = 3
+                                    self.points += int((float(unit.patience)/600.0)*self.pointMax)
+                                else:
+                                    unit.patience = 0
                                 break
                     if(unit.patience<=0 and unit.task!=4):
                         unit.task = 9 # exiting
@@ -1789,7 +1833,48 @@ class Sim:
         self.draw(True)
         if(self.time>0):
             self.time -= 1
-    
+        if(self.time<=0): # compile and send the day's data to simData
+            # price, goal amounts, and ordered amounts for supplies need to be obtained at the start of a simulated day
+                # used amounts for each supply need to be tracked throughout the day as products are ordered
+                # if there is not enough of a supply for a product, the customer should be turned away when they are clicked
+            # price and supply cost for products need to be obtained at the start of a simulated day
+                # sales for products need to be tracked throughout the day as they are ordered
+            # at the end of the day, these values need to be compiled and reported as new history entries in SimData
+            for s in self.supplies:
+                self.simDataRef.addSupplyHistory(s[0],s[1],s[2],s[3],s[5])
+                self.settingsRef.useSupply(s[0],s[5])
+            for p in self.products:
+                self.simDataRef.addProductHistory(p[0],p[1],p[2],self.settingsRef.getProdSupCost(p[0]))
+                self.settingsRef.earnMoney(p[1]*p[2])
+    def orderProduct(self,ID):
+        # when a product is ordered, the list of supplies and their amounts need to be retrieved from Settings
+            # check each supply amount against the amount of supplies available that day (this amount should be tracked)
+            # if there is enough of all the supplies:
+                # subtract the product amounts from each of them, add the price of the product to the day's profits (this value should be tracked), approve the order in the sim
+        success = True
+        for p in self.products:
+            if(p[0]==ID):
+                for ps in p[3]: # go through each supply/amount to make sure there is enough
+                    if(not success):
+                        break
+                    for s in self.supplies:
+                        if(s[0]==ps[0] and s[4]<ps[1]): # if the supplies match and there is less in stock than there is required
+                            success = False
+                            break
+                break
+        if(success): # now go through each supply/amount again to actually make the order
+            for p in self.products:
+                if(p[0]==ID):
+                    for ps in p[3]: # go through each supply/amount to make sure there is enough
+                        for s in self.supplies:
+                            if(s[0]==ps[0]): # we know that there is enough of the supply now, so we can order
+                                s[4] -= ps[1] # subtract the amount used for the product from the total supply
+                                s[5] += ps[1] # record the amount used for the product
+                                self.profit += p[1] # record the profit from selling a product
+                                p[2] += 1 # record a sale of the product
+                                break
+                    break            
+        return success
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = [int(MouseXY[0]/(16*self.SCALE)),int(MouseXY[1]/(16*self.SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
@@ -1839,7 +1924,7 @@ class Sim:
             # Draw HUD Text
             font = pygame.font.SysFont(None,40)
             timeText = self.ticksToString(self.time)
-            profitText = "$20.48"
+            profitText = f"{self.profit:.2f}"
             pointText = str(self.points)
             text = font.render(timeText,True,(0,0,0))
             self.surface.blit(text,[5*self.SCALE,4*self.SCALE])

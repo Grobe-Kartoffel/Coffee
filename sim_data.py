@@ -34,10 +34,10 @@ class SimData:
                 p.history.append([price,sales,cost])
                 break
     def eraseHistory(self):
-        for o in self.supplies:
-            del o.history
-        for o in self.products:
-            del o.history
+        for s in self.supplies:
+            s.history = []
+        for p in self.products:
+            p.hsitory = []
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = MouseXY
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
@@ -64,3 +64,4 @@ class SimData:
     def drawEndOfDayGraph(self):
         # TODO
         pass
+    

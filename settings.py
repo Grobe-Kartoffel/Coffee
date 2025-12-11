@@ -171,6 +171,18 @@ class Settings:
         if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
             return 0.0
         return self.Products[i].price        
+    def getProdSups(self,ID): # return list of ID's+Amounts
+        i = 0
+        lst = []        
+        while(i<len(self.Products) and self.Products[i].ID!=ID):
+            i += 1
+        if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
+            return lst
+        j = 0
+        while(j<len(self.Products[i].supplies) and j<len(self.Products[i].supAmts)):
+            lst.append([self.Products[i].supplies[j], self.Products[i].supAmts[j] ])
+            j += 1
+        return lst
     def getProdSupCost(self,ID): # return total cost of all supplies and their amounts that go into the product
         i = 0
         cost = 0.0
@@ -196,20 +208,41 @@ class Settings:
             # increment J
             j += 1
         return cost
+    def orderSupply(self,ID): # return ordered and current amounts of given supply, given current money and goal amount
+        ordered = 0
+        current = 0
+        for s in self.Supplies:
+            if(s.ID==ID):
+                while(self.money>s.price and s.amt<=s.goalAmt-1):
+                    ordered += 1
+                    s.amt += 1
+                    self.money -= s.price
+                current = s.amt
+                break
+        return ordered,current
+    def useSupply(self,ID,units): # adjust amount of supply based on the amount of supply used
+        for s in self.Supplies:
+            if(s.ID==ID):
+                s.amt -= units
+                break
+    def earnMoney(self,profits): # adjust money based on profits
+        self.money += profits
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.prevMouseXY = self.mouseXY
         self.mouseXY = MouseXY
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
             self.lftClkSt = 1
             # check if scroll bar was clicked
-            if(self.mouseXY[0]>=154*self.SCALE and self.mouseXY[0]<158*self.SCALE and self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<176*self.SCALE):
+            if(self.mouseXY[0]>=154*self.SCALE and self.mouseXY[0]<159*self.SCALE and self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<176*self.SCALE):
                 self.scrollSelect = True
             # check if list element was clicked
-            if(self.mouseXY[0]<4*self.SCALE or self.mouseXY[0]>159*self.SCALE or self.mouseXY[1]<20*self.SCALE or self.mouseXY[1]>176*self.SCALE):
+            if(self.mouseXY[0]<4*self.SCALE or self.mouseXY[0]>159*self.SCALE or self.mouseXY[1]<20*self.SCALE or self.mouseXY[1]>176*self.SCALE): # out of bounds was clicked
                 self.supplySelect = -1
                 self.productSelect = -1
                 self.supplySliderSelect = -1
                 self.productSliderSelect = -1
+            elif(self.mouseXY[0]>153*self.SCALE): # don't reset the clicked element, but don't adjust it either
+                pass
             else: # something was clicked, we need to figure out what, it's easiest to do this for both supplies and products
                 # as the list is scrolled up, the mouse should be offset down
                 # then, the mouse height, minus twenty, should be integer divided by 17 to find the index of the element to be selected
@@ -362,7 +395,7 @@ class Settings:
         # lowest it can be drawn is (154,160)*SCALE        
         if(self.scrollSelect):
             # also make sure mouse does not push scroll bar from afar if it goes out of bounds            
-            h = float(20.0+140.0*self.supplyScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
+            h = float(20.0+140.0*self.productScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
             self.productScroll = (h-20.0)/140.0
             if(self.productScroll<0):
                 self.productScroll = 0.0
