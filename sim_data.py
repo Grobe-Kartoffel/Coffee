@@ -68,18 +68,14 @@ class SimData:
             if(s.ID==supplyID):
                 # get all the data points
                 day = 0
-                if(len(s.history)<=7):
-                    for i in range(len(s.history)):
-                        orderedPoints.append([day,s.history[i][2]])
-                        usedPoints.append([day,s.history[i][3]])
-                        remainingPoints.append([day,s.history[i][4]])
-                        day += 1
-                else:
-                    for i in range(len(s.history)-7,len(s.history)):
-                        orderedPoints.append([day,s.history[i][2]])
-                        usedPoints.append([day,s.history[i][3]])
-                        remainingPoints.append([day,s.history[i][4]])
-                        day += 1 
+                hRange = 0
+                if(len(s.history)>7):
+                    hRange = len(s.history)-7
+                for i in range(hRange,len(s.history)):
+                    orderedPoints.append([day,s.history[i][2]])
+                    usedPoints.append([day,s.history[i][3]])
+                    remainingPoints.append([day,s.history[i][4]])
+                    day += 1
                 # find y maxes and mins
                 yGraphMin = orderedPoints[0][1]
                 yGraphMax = orderedPoints[0][1]
@@ -102,11 +98,15 @@ class SimData:
                 yGraphMin -= 0.05*(yGraphMax*0.95-yGraphMin)
                 # graph points
                 # draw 0 lines
+                if(xGraphMax==xGraphMin):
+                    xGraphMax += 1
+                if(yGraphMax==yGraphMin):
+                    yGraphMax += 1
                 x0 = float(0-xGraphMin)/float(xGraphMax-xGraphMin) # find the "scale" of a point by comparing it's value minus the min to the max minus the min
                 if(x0>=0 and x0<=1):
                     # to draw a point, reverse the process, multiply by the max minus the min, then add the min
                     pygame.draw.line(surface, (0,0,0), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMin), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMax), width=2)
-                y0 = 1.0 - float(0-yGraphMin)/float(yGraphMax)
+                y0 = 1.0 - float(0-yGraphMin)/float(yGraphMax-yGraphMin)
                 if(y0>=0 and y0<=1):
                     pygame.draw.line(surface, (0,0,0), (xWindowMin,y0*(yWindowMax-yWindowMin)+yWindowMin), (xWindowMax,y0*(yWindowMax-yWindowMin)+yWindowMin), width=2)
                 # draw points
@@ -185,6 +185,104 @@ class SimData:
             # draw totals here
             return
         # draw specific graph here
+        for p in self.products:
+            if(p.ID==productID):
+                # get all the data points
+                day = 0
+                hRange = 0
+                if(len(p.history)>7):
+                    hRange = len(p.history)-7
+                for i in range(hRange,len(p.history)):
+                    revenuePoints.append([day,p.history[i][0]*p.history[i][1]])
+                    costPoints.append([day,p.history[i][2]*p.history[i][1]])
+                    profitPoints.append([day,p.history[i][0]*p.history[i][1] - p.history[i][2]*p.history[i][1]])
+                    day += 1
+                # find y maxes and mins
+                yGraphMin = revenuePoints[0][1]
+                yGraphMax = revenuePoints[0][1]
+                for p in revenuePoints:
+                    if(p[1]>yGraphMax):
+                        yGraphMax = p[1]
+                    if(p[1]<yGraphMin):
+                        yGraphMin = p[1]
+                for p in costPoints:
+                    if(p[1]>yGraphMax):
+                        yGraphMax = p[1]
+                    if(p[1]<yGraphMin):
+                        yGraphMin = p[1]
+                for p in profitPoints:
+                    if(p[1]>yGraphMax):
+                        yGraphMax = p[1]
+                    if(p[1]<yGraphMin):
+                        yGraphMin = p[1]
+                yGraphMax += 0.05*(yGraphMax-yGraphMin)
+                yGraphMin -= 0.05*(yGraphMax*0.95-yGraphMin)
+                # graph points
+                # draw 0 lines
+                if(xGraphMax==xGraphMin):
+                    xGraphMax += 1
+                if(yGraphMax==yGraphMin):
+                    yGraphMax += 1                
+                x0 = float(0-xGraphMin)/float(xGraphMax-xGraphMin) # find the "scale" of a point by comparing it's value minus the min to the max minus the min
+                if(x0>=0 and x0<=1):
+                    # to draw a point, reverse the process, multiply by the max minus the min, then add the min
+                    pygame.draw.line(surface, (0,0,0), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMin), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMax), width=2)
+                y0 = 1.0 - float(0-yGraphMin)/float(yGraphMax-yGraphMin)
+                if(y0>=0 and y0<=1):
+                    pygame.draw.line(surface, (0,0,0), (xWindowMin,y0*(yWindowMax-yWindowMin)+yWindowMin), (xWindowMax,y0*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                # draw points
+                BLUE = (18,83,175)
+                GREEN = (66,170,59)
+                RED = (255,0,0)
+                font = pygame.font.SysFont(None,18)
+                captions = []
+                for i in range(len(revenuePoints)):
+                    p = revenuePoints[i]
+                    x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                    y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+                    pygame.draw.circle(surface, BLUE, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+                    # draw line to previous point
+                    if(i>0):
+                        p_ = revenuePoints[i-1]
+                        x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                        y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                        pygame.draw.line(surface, BLUE, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                        # check for mouse hover
+                    if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                        captions.append(f"Revenue: {p[1]:.2f}")
+                for i in range(len(costPoints)):
+                    p = costPoints[i]
+                    x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                    y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+                    pygame.draw.circle(surface, RED, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+                    # draw line to previous point
+                    if(i>0):
+                        p_ = costPoints[i-1]
+                        x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                        y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                        pygame.draw.line(surface, RED, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                        # check for mouse hover
+                    if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                        captions.append(f"Cost: {p[1]:.2f}")
+                for i in range(len(profitPoints)):
+                    p = profitPoints[i]
+                    x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                    y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+                    pygame.draw.circle(surface, GREEN, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+                    # draw line to previous point
+                    if(i>0):
+                        p_ = profitPoints[i-1]
+                        x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                        y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                        pygame.draw.line(surface, GREEN, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                    # check for mouse hover
+                    if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                        captions.append(f"Profit: {p[1]:.2f}")
+                # draw mouse hover text
+                for i in range(len(captions)):
+                    text = font.render(captions[i],True,(0,0,0),(255,255,255))
+                    surface.blit(text,[self.mouseXY[0],self.mouseXY[1]-(font.size(captions[i])[1])*(len(captions)-i)])                
+                break        
     def drawSalesGraph(self, productID, surface, SCALE):
         # when a product item is clicked
             # display total sales (blue) for the last 7 days

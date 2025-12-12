@@ -259,7 +259,7 @@ class Settings:
                 else:
                     self.supplySliderSelect = -1
                 # code for product list
-                h = self.mouseXY[1]/self.SCALE - (138 - 17*(len(self.Supplies)-1) )*self.productScroll # the offset equation is without scaling, so the mouse location needs to have the scale removed as well
+                h = self.mouseXY[1]/self.SCALE - (138 - 17*(len(self.Products)-1) )*self.productScroll # the offset equation is without scaling, so the mouse location needs to have the scale removed as well
                 hi = int(float(h-20)/17.0)
                 hm = int(h-20)%17
                 self.productSelect = self.Products[hi].ID     
