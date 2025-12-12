@@ -187,7 +187,7 @@ def main():
                 settings.storeInputs(mouseXY,mouseDown)
                 simData.storeInputs(mouseXY)
             case GameState.gameSettings:
-                settingsMenu.store_inputs(mouseXY, mouseDown)   
+                settingsMenu.store_inputs(mouseXY, mouseDown)
             case GameState.gameEndDay:
                 simData.storeInputs(mouseXY)
 
@@ -344,12 +344,12 @@ def main():
                     draw_button_outline(surface, playBtn)
 
                 if settingsBtn.collidepoint(mx, my):
-                     draw_button_glow(surface, settingsBtn)
-                     draw_button_outline(surface, settingsBtn)
+                    draw_button_glow(surface, settingsBtn)
+                    draw_button_outline(surface, settingsBtn)
 
                 if quitBtn.collidepoint(mx, my):
                     draw_button_glow(surface, quitBtn)
-                    draw_button_outline(surface, quitBtn)    
+                    draw_button_outline(surface, quitBtn)
             
             # -TODO-
             case GameState.gameMenu:

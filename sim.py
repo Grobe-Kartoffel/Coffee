@@ -643,7 +643,7 @@ class Sim:
                                     elif unit.order in unit.sup_pas:
                                         unit.dir = 1
                                     else:
-                                        unit.dir = 3                                    
+                                        unit.dir = 3
                                     break
                         case 1: # grabbing a base ingredient
                             if(unit.offset[0]>0):                   # centering
@@ -964,7 +964,7 @@ class Sim:
                                             o.loc[1] = -1
                                             unit.dir = 1
                                             unit.task += 1
-                                            break                                    
+                                            break
                                 else:
                                     unit.offset[0] -= 2
                                     if(unit.offset[0]<=-32):
@@ -1782,7 +1782,7 @@ class Sim:
                                             o.loc[1] = -1
                                             unit.dir = 1
                                             unit.task += 1
-                                            break                                    
+                                            break
                                 else:
                                     unit.offset[0] -= 2
                                     if(unit.offset[0]<=-32):
@@ -1886,7 +1886,7 @@ class Sim:
                                 s[4] -= ps[1] # subtract the amount used for the product from the total supply
                                 s[5] += ps[1] # record the amount used for the product
                                 break
-                    break            
+                    break
         return success, profit
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = [int(MouseXY[0]/(16*self.SCALE)),int(MouseXY[1]/(16*self.SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)

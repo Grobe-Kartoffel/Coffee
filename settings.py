@@ -75,7 +75,7 @@ class Settings:
         self.prod_dry = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,64,65,66,67,69,70,71,72,73,74,75,76,77,78,79,81,82,83]
         self.prod_sm  = [22,25,28,31,34,37,38,87]
         self.prod_rg  = [23,26,29,32,35,39,40,42,44,46,48,50,52,54,56,58,60,62]
-        self.prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]        
+        self.prod_lg  = [24,27,30,33,36,41,43,45,47,49,51,53,55,57,59,61,63]
     def __str__(self):
         string = "Supplies:\n"
         for s in self.Supplies:
@@ -151,14 +151,14 @@ class Settings:
             i += 1
         if(i>=len(self.Supplies)): # if we didn't find the supply, return an amount of 0
             return 0.0
-        return self.Supplies[i].amt        
+        return self.Supplies[i].amt
     def getSupGoal(self,ID):
         i = 0
         while(i<len(self.Supplies) and self.Supplies[i].ID!=ID):
             i += 1
         if(i>=len(self.Supplies)): # if we didn't find the supply, return a goalAmount of 0
             return 0.0
-        return self.Supplies[i].goalAmt        
+        return self.Supplies[i].goalAmt
     def getProds(self): # return list of ID's+Names
         prods = []
         for p in self.Products:
@@ -170,7 +170,7 @@ class Settings:
             i += 1
         if(i>=len(self.Products)): # if we didn't find the supply, return a price of 0
             return 0.0
-        return self.Products[i].price        
+        return self.Products[i].price
     def getProdSups(self,ID): # return list of ID's+Amounts
         i = 0
         lst = []        
@@ -264,13 +264,13 @@ class Settings:
                 h = self.mouseXY[1]/self.SCALE - (138 - 17*(len(self.Products)-1) )*self.productScroll # the offset equation is without scaling, so the mouse location needs to have the scale removed as well
                 hi = int(float(h-20)/17.0)
                 hm = int(h-20)%17
-                self.productSelect = self.Products[hi].ID     
+                self.productSelect = self.Products[hi].ID
                 # reverse engineer the location of the slider and see if the mouse width is within 6*SCALE units of it
-                w = (27+108*(self.Products[hi].price/50.0))*self.SCALE                
+                w = (27+108*(self.Products[hi].price/50.0))*self.SCALE
                 if(hm>=9 and hm<=15 and self.mouseXY[0]>=w and self.mouseXY[0]<=w+6*self.SCALE): # the slider was potentially clicked
                     self.productSliderSelect = self.Products[hi].ID
                 else:
-                    self.productSliderSelect = -1                
+                    self.productSliderSelect = -1
                 
             return
         if(self.lftClkSt==1 and lftClk): # mouse is held down
@@ -281,7 +281,7 @@ class Settings:
             self.scrollSelect = False
             self.supplySliderSelect = -1
             self.productSliderSelect = -1
-            return    
+            return
     def resetObjects(self):
         self.money = 0.0
         for s in self.Supplies:
@@ -326,12 +326,12 @@ class Settings:
             img = self.chk_pwd
         else:                            # this obj should only show up on the value sliders, if it shows up as an icon, we know something is wrong
             img = self.sldrKnbHigh
-        return img        
+        return img
     def displaySupplyMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
         # lowest it can be drawn is (154,160)*SCALE
         if(self.scrollSelect):
-            # also make sure mouse does not push scroll bar from afar if it goes out of bounds            
+            # also make sure mouse does not push scroll bar from afar if it goes out of bounds
             h = float(20.0+140.0*self.supplyScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
             self.supplyScroll = (h-20.0)/140.0
             if(self.supplyScroll<0):
@@ -348,7 +348,7 @@ class Settings:
         # the scroll bar should modify the height so that the last element is drawn at (5,159)*SCALE when the scroll bar is at the bottom
         # height of the final element before scrolling is 21 + 17*(len(self.Supplies)-1)
         # height of the final element after scrolling should be 159
-        # the difference is -138 + 17*(len(self.Supplies)-1)        
+        # the difference is -138 + 17*(len(self.Supplies)-1)
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Supplies)-1) )*self.supplyScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
@@ -378,7 +378,7 @@ class Settings:
                     w = 135*self.SCALE
                 # reverse engineer the new price
                 self.Supplies[i].goalAmt = (((w/self.SCALE)-27)/108)*50
-                # display the knob                
+                # display the knob
                 surface.blit(self.sldrKnbHigh, ((27+108*(self.Supplies[i].goalAmt/50))*self.SCALE,(h+9)*self.SCALE) )
             else:
                 surface.blit(self.sldrKnbLow, ((27+108*(self.Supplies[i].goalAmt/50))*self.SCALE,(h+9)*self.SCALE) )
@@ -386,7 +386,7 @@ class Settings:
             if(self.supplySliderSelect==self.Supplies[i].ID):
                 s = f"Stock Amount: {self.Supplies[i].goalAmt:.0f}"
                 text = font.render(s,True,(0,0,0))
-                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])                
+                surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])
             else:
                 text = font.render(str(self.Supplies[i].name),True,(0,0,0))
                 surface.blit(text,[28*self.SCALE,(h+2)*self.SCALE])
@@ -394,15 +394,15 @@ class Settings:
         return self.supplySelect
     def displayProductMenu(self,surface):
         # highest the scroll bar can be drawn is (154,20)*SCALE
-        # lowest it can be drawn is (154,160)*SCALE        
+        # lowest it can be drawn is (154,160)*SCALE
         if(self.scrollSelect):
-            # also make sure mouse does not push scroll bar from afar if it goes out of bounds            
+            # also make sure mouse does not push scroll bar from afar if it goes out of bounds
             h = float(20.0+140.0*self.productScroll) + ( ((self.mouseXY[1]-self.prevMouseXY[1])/self.SCALE) if (self.mouseXY[1]>=20*self.SCALE and self.mouseXY[1]<=176*self.SCALE) else 0)
             self.productScroll = (h-20.0)/140.0
             if(self.productScroll<0):
                 self.productScroll = 0.0
             if(self.productScroll>1):
-                self.productScroll = 1.0            
+                self.productScroll = 1.0
             surface.blit(self.scrlBarHigh,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
         else:
             surface.blit(self.scrlBarLow,(154*self.SCALE,(20+140*self.productScroll)*self.SCALE))
@@ -413,7 +413,7 @@ class Settings:
         # the scroll bar should modify the height so that the last element is drawn at (5,159)*SCALE when the scroll bar is at the bottom
         # height of the final element before scrolling is 21 + 17*(len(self.Products)-1)
         # height of the final element after scrolling should be 159
-        # the difference is -138 + 17*(len(self.Products)-1)        
+        # the difference is -138 + 17*(len(self.Products)-1)
         # each element should be drawn at (5,21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll )
         # if the height is less then 20 or greater than 160, the element should not be drawn
         i = 0
@@ -422,7 +422,7 @@ class Settings:
             h = 21 + 17*i + (138 - 17*(len(self.Products)-1) )*self.productScroll
             if(h<20 or h>160):
                 i += 1
-                continue            
+                continue
             if(self.productSelect==self.Products[i].ID):
                 surface.blit(self.itemHigh, (5*self.SCALE, h*self.SCALE ))
             else:
