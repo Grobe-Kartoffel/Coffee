@@ -1,6 +1,7 @@
 To Run:
 1. Install python and pygame (see How To Install Python.txt).
 2. Run coffee.py (try with CLI if necessary).
+3. Play around with it, push buttons, drag sliders, etc. You'll figure it out.
 
 Organization:
 - Source files in this folder.
@@ -47,5 +48,5 @@ Code Credits:
 	- Ian Becker: (393/4312) (9.1%)
 	- Carter Bossong: (76/4312) (1.8%)
 	- Yann Lekomo: (320/4312) (7.4%)
-	- Briar Wentling: (x/4312) (81.7%)
+	- Briar Wentling: (3523/4312) (81.7%)
 
