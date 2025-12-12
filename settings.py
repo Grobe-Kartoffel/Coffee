@@ -5,7 +5,7 @@ class Settings:
     def __init__(self,SCALE):
         self.Products = []
         self.Supplies = []
-        self.money = 100.0
+        self.money = 0.0
         self.mouseXY = [0,0]
         self.prevMouseXY = [0,0]
         self.lftClkSt = 0
@@ -227,6 +227,8 @@ class Settings:
                 break
     def earnMoney(self,profits): # adjust money based on profits
         self.money += profits
+    def getMoney(self):
+        return self.money
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.prevMouseXY = self.mouseXY
         self.mouseXY = MouseXY
@@ -253,7 +255,7 @@ class Settings:
                 hm = int(h-20)%17
                 self.supplySelect = self.Supplies[hi].ID
                 # reverse engineer the location of the slider and see if the mouse width is within 6*SCALE units of it
-                w = (27+108*(self.Supplies[hi].goalAmt/200))*self.SCALE
+                w = (27+108*(self.Supplies[hi].goalAmt/50))*self.SCALE
                 if(hm>=9 and hm<=15 and self.mouseXY[0]>=w and self.mouseXY[0]<=w+6*self.SCALE): # the slider was potentially clicked
                     self.supplySliderSelect = self.Supplies[hi].ID
                 else:
@@ -281,10 +283,10 @@ class Settings:
             self.productSliderSelect = -1
             return    
     def resetObjects(self):
-        self.money = 100.0
+        self.money = 0.0
         for s in self.Supplies:
-            s.amt = 100.0
-            s.goalAmt = 100.0
+            s.amt = 25.0
+            s.goalAmt = 25.0
     def resetMenus(self):
         self.supplyScroll = 0.0
         self.productScroll = 0.0
@@ -368,18 +370,18 @@ class Settings:
             if(self.supplySliderSelect==self.Supplies[i].ID):
                 # find the new location based on how much the mouse dragged
                 # also make sure mouse does not push knob from afar if it goes out of bounds
-                w = (27+108*(self.Supplies[i].goalAmt/200))*self.SCALE + ((self.mouseXY[0]-self.prevMouseXY[0]) if (self.mouseXY[0]>=27*self.SCALE and self.mouseXY[0]<=141*self.SCALE) else 0 )
+                w = (27+108*(self.Supplies[i].goalAmt/50))*self.SCALE + ((self.mouseXY[0]-self.prevMouseXY[0]) if (self.mouseXY[0]>=27*self.SCALE and self.mouseXY[0]<=141*self.SCALE) else 0 )
                 # don't let it go out of bounds
                 if(w<27*self.SCALE):
                     w = 27*self.SCALE
                 if(w>135*self.SCALE):
                     w = 135*self.SCALE
                 # reverse engineer the new price
-                self.Supplies[i].goalAmt = (((w/self.SCALE)-27)/108)*200
+                self.Supplies[i].goalAmt = (((w/self.SCALE)-27)/108)*50
                 # display the knob                
-                surface.blit(self.sldrKnbHigh, ((27+108*(self.Supplies[i].goalAmt/200))*self.SCALE,(h+9)*self.SCALE) )
+                surface.blit(self.sldrKnbHigh, ((27+108*(self.Supplies[i].goalAmt/50))*self.SCALE,(h+9)*self.SCALE) )
             else:
-                surface.blit(self.sldrKnbLow, ((27+108*(self.Supplies[i].goalAmt/200))*self.SCALE,(h+9)*self.SCALE) )
+                surface.blit(self.sldrKnbLow, ((27+108*(self.Supplies[i].goalAmt/50))*self.SCALE,(h+9)*self.SCALE) )
             # text should be displayed at (28,23)*SCALE plus the height offset of the element it cooresponds to
             if(self.supplySliderSelect==self.Supplies[i].ID):
                 s = f"Stock Amount: {self.Supplies[i].goalAmt:.0f}"

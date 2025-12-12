@@ -5,6 +5,7 @@ class SimData:
         # Constructor. Define instance vars here.
         self.supplies = []
         self.products = []
+        self.transactions = []
         self.mouseXY = [0,0]
         self.lftClkSt = 0
         self.hoverFrame = 20 # 0-20
@@ -19,6 +20,12 @@ class SimData:
             self.name = name
             self.history = [] # [price,sales,supplyCost]
             # Revenue, cost, and profit can all be calculated with sales and supply cost.
+    class Transaction:
+        def __init__(self,time,money,profit,points):
+            self.time = time
+            self.money = money
+            self.profit = profit
+            self.points = points
     def addSupply(self, ID, name):
         self.supplies.append(self.Supply(ID, name))
     def addProduct(self, ID, name):
@@ -33,11 +40,15 @@ class SimData:
             if(p.ID==ID):
                 p.history.append([price,sales,cost])
                 break
+    def addTransaction(self,time,money,profit,points):
+        self.transactions.append(self.Transaction(time, money, profit, points))
     def eraseHistory(self):
         for s in self.supplies:
             s.history = []
         for p in self.products:
             p.hsitory = []
+    def clearTransactions(self):
+        self.transactions = []
     def storeInputs(self,MouseXY): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = MouseXY
     def drawSupplyGraph(self, supplyID, surface, SCALE):
@@ -221,7 +232,7 @@ class SimData:
                         pygame.draw.line(surface, BLUE, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
                         # check for mouse hover
                     if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
-                        captions.append(f"Used: {p[1]:.0f}")
+                        captions.append(f"Used: {p[1]:.2f}")
                 for i in range(len(remainingPoints)):
                     p = remainingPoints[i]
                     x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
@@ -235,7 +246,7 @@ class SimData:
                         pygame.draw.line(surface, RED, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
                     # check for mouse hover
                     if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
-                        captions.append(f"Remaining: {p[1]:.0f}")
+                        captions.append(f"Remaining: {p[1]:.2f}")
                 # draw mouse hover text
                 for i in range(len(captions)):
                     font = pygame.font.SysFont(None,18)
@@ -614,12 +625,132 @@ class SimData:
         font = pygame.font.SysFont(None,40)
         text = font.render("Today's Results",True,(0,0,0))
         surface.blit(text,[84*SCALE,43*SCALE])  
-        xGraphMin = 5
-        xGraphMax = 21
+        xGraphMin = 0
+        xGraphMax = 0
         yGraphMin = 0
         yGraphMax = 0
         cashPoints = []
         revenuePoints = []
         scorePoints = []
         # draw specific graph here
-    
+        for i in range(len(self.transactions)):
+            # get all the data points
+            t = self.transactions[i]
+            if(len(cashPoints)==0): # if this is the first point, we just add the flat value
+                cashPoints.append([t.time,t.money])
+            elif(t.money!=0): # this is not the first point, make sure to not record a zero
+                cashPoints.append([t.time,t.money+cashPoints[len(cashPoints)-1][1]])
+            if(len(revenuePoints)==0):
+                if(t.profit!=0):
+                    revenuePoints.append([t.time,t.profit])
+            elif(t.profit!=0):
+                revenuePoints.append([t.time,t.profit+revenuePoints[len(revenuePoints)-1][1]])
+            if(len(scorePoints)==0):
+                if(t.points!=0):
+                    scorePoints.append([t.time,t.points])
+            elif(t.points!=0):
+                scorePoints.append([t.time,t.points+scorePoints[len(scorePoints)-1][1]])
+        # find y maxes and mins
+        xGraphMin = cashPoints[0][0]
+        xGraphMax = cashPoints[0][0]
+        yGraphMin = cashPoints[0][1]
+        yGraphMax = cashPoints[0][1]
+        for p in cashPoints:
+            if(p[0]>xGraphMax):
+                xGraphMax = p[0]
+            if(p[0]<xGraphMin):
+                xGraphMin = p[0]
+            if(p[1]>yGraphMax):
+                yGraphMax = p[1]
+            if(p[1]<yGraphMin):
+                yGraphMin = p[1]
+        for p in revenuePoints:
+            if(p[0]>xGraphMax):
+                xGraphMax = p[0]
+            if(p[0]<xGraphMin):
+                xGraphMin = p[0]
+            if(p[1]>yGraphMax):
+                yGraphMax = p[1]
+            if(p[1]<yGraphMin):
+                yGraphMin = p[1]
+        for p in scorePoints:
+            if(p[0]>xGraphMax):
+                xGraphMax = p[0]
+            if(p[0]<xGraphMin):
+                xGraphMin = p[0]
+            if(p[1]>yGraphMax):
+                yGraphMax = p[1]
+            if(p[1]<yGraphMin):
+                yGraphMin = p[1]
+        xGraphMax += 0.05*(xGraphMax-xGraphMin)
+        xGraphMin -= 0.05*(xGraphMax*0.95-xGraphMin)
+        yGraphMax += 0.05*(yGraphMax-yGraphMin)
+        yGraphMin -= 0.05*(yGraphMax*0.95-yGraphMin)
+        # graph points
+        # draw 0 lines
+        if(xGraphMax==xGraphMin):
+            xGraphMax += 1
+        if(yGraphMax==yGraphMin):
+            yGraphMax += 1                
+        x0 = float(0-xGraphMin)/float(xGraphMax-xGraphMin) # find the "scale" of a point by comparing it's value minus the min to the max minus the min
+        if(x0>=0 and x0<=1):
+            # to draw a point, reverse the process, multiply by the max minus the min, then add the min
+            pygame.draw.line(surface, (0,0,0), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMin), (x0*(xWindowMax-xWindowMin)+xWindowMin,yWindowMax), width=2)
+        y0 = 1.0 - float(0-yGraphMin)/float(yGraphMax-yGraphMin)
+        if(y0>=0 and y0<=1):
+            pygame.draw.line(surface, (0,0,0), (xWindowMin,y0*(yWindowMax-yWindowMin)+yWindowMin), (xWindowMax,y0*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+        # draw points
+        BLUE = (18,83,175)
+        GREEN = (66,170,59)
+        RED = (255,0,0)
+        captions = []
+        for i in range(len(cashPoints)):
+            p = cashPoints[i]
+            x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+            y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+            pygame.draw.circle(surface, RED, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+            # draw line to previous point
+            if(i>0):
+                p_ = cashPoints[i-1]
+                x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                pygame.draw.line(surface, RED, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                # check for mouse hover
+            if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                if(i==0):
+                    captions.append(f"Money After Supply Restock: {p[1]:.2f}")
+                else:
+                    captions.append(f"Money: {p[1]:.2f}")
+        for i in range(len(revenuePoints)):
+            p = revenuePoints[i]
+            x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+            y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+            pygame.draw.circle(surface, GREEN, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+            # draw line to previous point
+            if(i>0):
+                p_ = revenuePoints[i-1]
+                x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                pygame.draw.line(surface, GREEN, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+                # check for mouse hover
+            if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                captions.append(f"Revenue: {p[1]:.2f}")
+        for i in range(len(scorePoints)):
+            p = scorePoints[i]
+            x = float(p[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+            y = 1 - float(p[1]-yGraphMin)/float(yGraphMax-yGraphMin)
+            pygame.draw.circle(surface, BLUE, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), 6)
+            # draw line to previous point
+            if(i>0):
+                p_ = scorePoints[i-1]
+                x_ = float(p_[0]-xGraphMin)/float(xGraphMax-xGraphMin)
+                y_ = 1 - float(p_[1]-yGraphMin)/float(yGraphMax-yGraphMin)                            
+                pygame.draw.line(surface, BLUE, (x*(xWindowMax-xWindowMin)+xWindowMin,y*(yWindowMax-yWindowMin)+yWindowMin), (x_*(xWindowMax-xWindowMin)+xWindowMin,y_*(yWindowMax-yWindowMin)+yWindowMin), width=2)
+            # check for mouse hover
+            if(self.mouseXY[0]>=x*(xWindowMax-xWindowMin)+xWindowMin-6 and self.mouseXY[0]<=x*(xWindowMax-xWindowMin)+xWindowMin+6 and self.mouseXY[1]>=y*(yWindowMax-yWindowMin)+yWindowMin-6 and self.mouseXY[1]<=y*(yWindowMax-yWindowMin)+yWindowMin+6):
+                captions.append(f"Score: {p[1]:.0f}")
+        # draw mouse hover text
+        for i in range(len(captions)):
+            font = pygame.font.SysFont(None,18)
+            text = font.render(captions[i],True,(0,0,0),(255,255,255))
+            surface.blit(text,[self.mouseXY[0],self.mouseXY[1]-(font.size(captions[i])[1])*(len(captions)-i)])        

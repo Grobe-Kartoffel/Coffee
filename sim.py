@@ -16,7 +16,7 @@ class Sim:
         self.lftClkSt = 0
         self.points = 0
         self.profit = 0.00
-        self.pointMax = 100.0
+        self.pointMax = 40.0
         self.time = 3600            # Number of frames remaining in the current day.
         self.maxTime = 3600         # Length of sim days in frames. # game feels like a good length at 2 minutes, 7200 frames, but for demo, set to 1 minute
         self.hoursInDay = 14        # Number of hours in one sim day (for converting time to UI display).
@@ -34,6 +34,7 @@ class Sim:
         # during-sim prod/supply trackers
         self.supplies = [] # [supplies[ID, price, goal amount, ordered amount, current amount, used amount] ]
         self.products = [] # [products[ID, price, sales, [supplies[ID,amount]] ] ]
+        self.transactions = [] # [transaction[time, money earned, sale revenue, sale points]] # each point holds the change in the 3, not the absolute value
         
         # Load Image Assets as Surfaces ------------------------------------
         # Floorplan:
@@ -1074,6 +1075,8 @@ class Sim:
         # grab supply/product information needed for the day
         self.supplies = []
         self.products = []
+        self.transactions = []
+        self.simDataRef.clearTransactions()
         lst = self.settingsRef.getSups()
         ID = 0
         price = 0
@@ -1094,6 +1097,7 @@ class Sim:
             ordered = 0 # sales, but reusing a variable
             pSups = self.settingsRef.getProdSups(ID)
             self.products.append([ID,price,ordered,pSups])
+        self.transactions.append([0,self.settingsRef.getMoney(),0,0])
     def runSim(self):
         # handle customers
         i = 0
@@ -1169,10 +1173,12 @@ class Sim:
                         for e in self.employees:
                             if(e.job==0 and e.task==0 and e.loc[0]==5 and e.loc[1]==4):
                                 # see if we can order the product
-                                if(self.orderProduct(unit.order)):
+                                canOrder, profit = self.orderProduct(unit.order)
+                                if(canOrder):
                                     unit.task += 1
                                     unit.dir = 3
                                     self.points += int((float(unit.patience)/600.0)*self.pointMax)
+                                    self.transactions.append([self.maxTime-self.time,profit,profit,int((float(unit.patience)/600.0)*self.pointMax)])
                                 else:
                                     unit.patience = 0
                                 break
@@ -1181,6 +1187,7 @@ class Sim:
                         unit.dir = 1 # face north
                         if(self.time>0): # only calculate points/profits if there is still time
                             self.points -= int(self.pointMax)
+                            self.transactions.append([self.maxTime-self.time,0,0,-1*int(self.pointMax)])
                 case 4: # walking to the pick-up line
                     if(unit.offset[0]<0):                                           # centering onto current tile
                         unit.offset[0] += 2
@@ -1249,6 +1256,7 @@ class Sim:
                                 unit.dir = 3
                                 if(self.time>0): # only calculate points/profit if there is still time
                                     self.points += int(self.pointMax/4)
+                                    self.transactions.append([self.maxTime-self.time,0,0,int(self.pointMax/4)])
                 case 7: # finding a seat
                     if(unit.offset[0]<0):                                                   # centering onto current tile
                         unit.offset[0] += 2
@@ -1846,6 +1854,8 @@ class Sim:
             for p in self.products:
                 self.simDataRef.addProductHistory(p[0],p[1],p[2],self.settingsRef.getProdSupCost(p[0]))
                 self.settingsRef.earnMoney(p[1]*p[2])
+            for t in self.transactions:
+                self.simDataRef.addTransaction(t[0],t[1],t[2],t[3])
             self.time = -1
     def orderProduct(self,ID):
         # when a product is ordered, the list of supplies and their amounts need to be retrieved from Settings
@@ -1853,6 +1863,7 @@ class Sim:
             # if there is enough of all the supplies:
                 # subtract the product amounts from each of them, add the price of the product to the day's profits (this value should be tracked), approve the order in the sim
         success = True
+        profit = 0.0
         for p in self.products:
             if(p[0]==ID):
                 for ps in p[3]: # go through each supply/amount to make sure there is enough
@@ -1867,7 +1878,8 @@ class Sim:
             for p in self.products:
                 if(p[0]==ID):
                     self.profit += p[1] # record the profit from selling a product
-                    p[2] += 1 # record a sale of the product                    
+                    p[2] += 1 # record a sale of the product
+                    profit = p[1] # record the profit so the customer can record a transaction
                     for ps in p[3]: # go through each supply/amount to make sure there is enough
                         for s in self.supplies:
                             if(s[0]==ps[0]): # we know that there is enough of the supply now, so we can order
@@ -1875,7 +1887,7 @@ class Sim:
                                 s[5] += ps[1] # record the amount used for the product
                                 break
                     break            
-        return success
+        return success, profit
     def storeInputs(self,MouseXY,lftClk): # Takes user input and converts them into a better format for the Sim to use
         self.mouseXY = [int(MouseXY[0]/(16*self.SCALE)),int(MouseXY[1]/(16*self.SCALE))] #scale down to the 20x12 grid of the simulation (first and last 16x are offscreen and ignored)
         if(self.lftClkSt==0 and lftClk): # mouse was clicked
