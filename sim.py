@@ -1522,7 +1522,7 @@ class Sim:
                                 continue
                             if(unit.offset[1]<0):                       # centering
                                 unit.offset[1] += 2
-                                if(unit.offset[1]==0 and unit.loc[1]==unit.orderLoc+4):
+                                if(unit.offset[1]==0 and (unit.loc[1]==unit.orderLoc+4 or (unit.loc[1]==7 and unit.loc[0]>3))):
                                     unit.dir = 2
                                     unit.offset[0] += 2
                             if(unit.offset[0]>0):                       # ^
@@ -1540,7 +1540,7 @@ class Sim:
                                         unit.orderLoc = -1
                                         if(unit.loc[1]==4):
                                             unit.dir = 0
-                                    elif(unit.loc[1]==3):   # double check that we are in front of the correct product location
+                                    elif(unit.loc[0]==3):   # double check that we are in front of the correct product location
                                         if(unit.loc[1]!=unit.orderLoc+4):
                                             unit.dir = 3
                             elif(unit.offset[0]<=0 and unit.dir==2):    # walk left
