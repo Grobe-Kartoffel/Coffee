@@ -1866,13 +1866,13 @@ class Sim:
         if(success): # now go through each supply/amount again to actually make the order
             for p in self.products:
                 if(p[0]==ID):
+                    self.profit += p[1] # record the profit from selling a product
+                    p[2] += 1 # record a sale of the product                    
                     for ps in p[3]: # go through each supply/amount to make sure there is enough
                         for s in self.supplies:
                             if(s[0]==ps[0]): # we know that there is enough of the supply now, so we can order
                                 s[4] -= ps[1] # subtract the amount used for the product from the total supply
                                 s[5] += ps[1] # record the amount used for the product
-                                self.profit += p[1] # record the profit from selling a product
-                                p[2] += 1 # record a sale of the product
                                 break
                     break            
         return success
